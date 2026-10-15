@@ -1,0 +1,301 @@
+{
+  "snr_db": [
+    -5,
+    0,
+    5,
+    10,
+    15,
+    20
+  ],
+  "test_images": 432,
+  "validation_images": 437,
+  "draws_per_image": 10,
+  "protocol": {
+    "modulation": "Gray 16-QAM",
+    "bg": 2,
+    "information_bits_per_block": 1024,
+    "coded_bits_per_block": 2048,
+    "payload_bits_per_block_before_length": 992,
+    "length_metadata_bytes": 4,
+    "length_in_band": true,
+    "demapper": "app",
+    "decoder": "boxplus-phi",
+    "iterations": 40,
+    "llr_max": 20,
+    "fading": "one Rayleigh h per image, shared across blocks",
+    "channel_bank": "same h/noise as AquaSC test runs",
+    "pooled_map_aggregation": "mean and standard deviation over 10 per-draw pooled mAP values",
+    "psnr_ssim_aggregation": "mean over all 4320 image/draw records",
+    "paired_ci": "per-image AP averaged over 10 draws; paired image bootstrap, 10000 resamples, seed 42, percentile 95%",
+    "failure_policy": "capacity/length/CRC/decode failures scored as black images; all records retained; fixed symbols asserted for every record"
+  },
+  "budget_order": [
+    "low",
+    "mid",
+    "high"
+  ],
+  "budgets": {
+    "low": {
+      "rate": 0.030612,
+      "symbols": 1536,
+      "blocks": 3,
+      "capacity_bytes": 368
+    },
+    "mid": {
+      "rate": 0.061224,
+      "symbols": 3072,
+      "blocks": 6,
+      "capacity_bytes": 740
+    },
+    "high": {
+      "rate": 0.122449,
+      "symbols": 6144,
+      "blocks": 12,
+      "capacity_bytes": 1484
+    }
+  },
+  "source": "Author-supplied matched-channel-use WebP/JPEG rerun, 2026-10-15; frozen aggregate inputs used by the revised paper figures.",
+  "codecs": {
+    "webp": {
+      "low": {
+        "quality": 1,
+        "capacity_failures": 25,
+        "encoder_options": {
+          "method": 4
+        },
+        "pooled_map50_mean": [
+          0,
+          0.0049,
+          0.013,
+          0.0228,
+          0.0324,
+          0.0338
+        ],
+        "pooled_map50_std": [
+          0,
+          0.0037,
+          0.0034,
+          0.0028,
+          0.001,
+          0.0013
+        ],
+        "psnr_db": [
+          4.52,
+          4.91,
+          12.24,
+          23.36,
+          30.07,
+          32.3
+        ],
+        "ssim": [
+          0.0027,
+          0.0154,
+          0.244,
+          0.5834,
+          0.7875,
+          0.8545
+        ]
+      },
+      "mid": {
+        "quality": 9,
+        "capacity_failures": 1,
+        "encoder_options": {
+          "method": 4
+        },
+        "pooled_map50_mean": [
+          0,
+          0.0086,
+          0.029,
+          0.0612,
+          0.0818,
+          0.0885
+        ],
+        "pooled_map50_std": [
+          0,
+          0.0027,
+          0.0031,
+          0.0046,
+          0.0025,
+          0.0024
+        ],
+        "psnr_db": [
+          4.52,
+          4.96,
+          13.03,
+          25.33,
+          32.83,
+          35.45
+        ],
+        "ssim": [
+          0.0027,
+          0.0163,
+          0.2566,
+          0.6163,
+          0.8346,
+          0.9104
+        ]
+      },
+      "high": {
+        "quality": 51,
+        "capacity_failures": 3,
+        "encoder_options": {
+          "method": 4
+        },
+        "pooled_map50_mean": [
+          0,
+          0.0114,
+          0.1326,
+          0.3246,
+          0.4423,
+          0.4804
+        ],
+        "pooled_map50_std": [
+          0,
+          0.003,
+          0.0086,
+          0.0147,
+          0.0087,
+          0.0067
+        ],
+        "psnr_db": [
+          4.52,
+          5.01,
+          13.99,
+          27.54,
+          35.86,
+          38.61
+        ],
+        "ssim": [
+          0.0027,
+          0.0165,
+          0.2624,
+          0.6251,
+          0.847,
+          0.9194
+        ]
+      }
+    },
+    "jpeg": {
+      "low": {
+        "quality": 1,
+        "capacity_failures": 432,
+        "encoder_options": {
+          "optimize": true,
+          "subsampling": "PIL default 4:2:0"
+        },
+        "pooled_map50_mean": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "pooled_map50_std": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "psnr_db": [
+          4.52,
+          4.52,
+          4.52,
+          4.52,
+          4.52,
+          4.52
+        ],
+        "ssim": [
+          0.0027,
+          0.0027,
+          0.0027,
+          0.0027,
+          0.0027,
+          0.0027
+        ]
+      },
+      "mid": {
+        "quality": 5,
+        "capacity_failures": 0,
+        "encoder_options": {
+          "optimize": true,
+          "subsampling": "PIL default 4:2:0"
+        },
+        "pooled_map50_mean": [
+          0,
+          0.0035,
+          0.01,
+          0.0244,
+          0.0308,
+          0.0332
+        ],
+        "pooled_map50_std": [
+          0,
+          0.0027,
+          0.0031,
+          0.0026,
+          0.0019,
+          0.0009
+        ],
+        "psnr_db": [
+          4.52,
+          4.7,
+          9.72,
+          18.84,
+          25.0,
+          27.1
+        ],
+        "ssim": [
+          0.0027,
+          0.0097,
+          0.1954,
+          0.5262,
+          0.749,
+          0.8247
+        ]
+      },
+      "high": {
+        "quality": 24,
+        "capacity_failures": 2,
+        "encoder_options": {
+          "optimize": true,
+          "subsampling": "PIL default 4:2:0"
+        },
+        "pooled_map50_mean": [
+          0,
+          0.0099,
+          0.0621,
+          0.1583,
+          0.2231,
+          0.2433
+        ],
+        "pooled_map50_std": [
+          0,
+          0,
+          0.0049,
+          0.0066,
+          0.0048,
+          0.0042
+        ],
+        "psnr_db": [
+          4.52,
+          4.83,
+          12.19,
+          24.51,
+          32.58,
+          35.33
+        ],
+        "ssim": [
+          0.0027,
+          0.0122,
+          0.2289,
+          0.5859,
+          0.8172,
+          0.8961
+        ]
+      }
+    }
+  }
+}

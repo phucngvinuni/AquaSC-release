@@ -1,0 +1,3 @@
+# Standalone paper plots; no Torch, TensorFlow or Sionna required.
+numpy>=1.24
+matplotlib>=3.7
