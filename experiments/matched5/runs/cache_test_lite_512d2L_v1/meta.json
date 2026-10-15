@@ -1,0 +1,12 @@
+{
+  "split": "test",
+  "site": "a",
+  "checkpoint": "__AQUASC_ROOT__/ckpt_polish_512d2L_from_tx_distill/checkpoint-14.pth",
+  "checkpoint_sha256": "e109217c78188d186eb7980ba933e4e1e261760099d188b4f2519575ce029472",
+  "encoder_embed_dim": 512,
+  "encoder_depth": 2,
+  "encoder_num_heads": 8,
+  "n": 432,
+  "decoder_parity_max_abs_error": 1.1920928955078125e-07,
+  "contents": "source encoder output only; not channel evaluation"
+}

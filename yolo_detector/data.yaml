@@ -1,0 +1,7 @@
+path: __AQUASC_DATA__/yolo_fish_dataset_root
+train: train/images
+val: valid/images
+test: test/images
+nc: 1
+names:
+  0: fish

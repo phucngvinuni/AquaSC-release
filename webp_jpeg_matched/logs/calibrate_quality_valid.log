@@ -1,0 +1,6 @@
+webp low {'q': 1, 'cap_B': 368, 'feasible_all_valid': False, 'max_valid_B': 548, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 399.35011441647595, 'n_valid_over_cap': 332, 'frac_valid_over_cap': 0.7597254004576659}
+webp mid {'q': 9, 'cap_B': 740, 'feasible_all_valid': True, 'max_valid_B': 738, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 507.55606407322654, 'n_valid_over_cap': 0, 'frac_valid_over_cap': 0.0}
+webp high {'q': 51, 'cap_B': 1484, 'feasible_all_valid': True, 'max_valid_B': 1476, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 977.3592677345538, 'n_valid_over_cap': 0, 'frac_valid_over_cap': 0.0}
+jpeg low {'q': 1, 'cap_B': 368, 'feasible_all_valid': False, 'max_valid_B': 651, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 618.8260869565217, 'n_valid_over_cap': 437, 'frac_valid_over_cap': 1.0}
+jpeg mid {'q': 5, 'cap_B': 740, 'feasible_all_valid': True, 'max_valid_B': 706, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 641.5881006864988, 'n_valid_over_cap': 0, 'frac_valid_over_cap': 0.0}
+jpeg high {'q': 24, 'cap_B': 1484, 'feasible_all_valid': True, 'max_valid_B': 1483, 'argmax_image': 'frame_037125_30.png', 'mean_valid_B': 1067.9244851258582, 'n_valid_over_cap': 0, 'frac_valid_over_cap': 0.0}

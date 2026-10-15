@@ -1,0 +1,103 @@
+# final_18_2.yaml — RUN-1 flagship (plan §16.6 / wave-8 gate).
+# Reproduces the paper's headline 18/2 configuration (RVQ 3x6 high + 2-bit low)
+# trained EMA + no-augmentation, 300 epochs, video-disjoint split, seed 42.
+# Reviewer mapping: underpins R3 #2 (reproducibility) and the §14.2 rate curve.
+name: final_18_2
+role: "RUN-1 flagship (final model, 18/2)"
+notes: >
+  RVQFIX stage-1 fix holds at utilization 1.0000 across all 300 epochs.
+  mAP@0.5 was NOT tracked during training (--yolo_weights "" to avoid VRAM
+  spikes); post-hoc mAP is the Wave-8 EVAL-FINAL pass (see reproduce_figures.py).
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL
+  best_psnr: checkpoint-best_psnr.pth   # epoch 239
+  best_psnr_epoch: 239
+  best_psnr_sha256: b1d2eb25419af6ed6703a4aa886eb7143a8f1f350bd50e3371dacb3cde9e2894
+  final: checkpoint-299.pth
+  final_sha256: 2cdddc5b485aae7996378199f6aaf82f394dc16439135f1392e311d4862fd86b
+  sha256_source: __AQUASC_TMP__/monitor_run1_final.md (cross-checked by checkpoints_sha256.txt)
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  # architecture
+  patch_size: 8
+  encoder_embed_dim: 512
+  encoder_depth: 8
+  encoder_num_heads: 8
+  decoder_embed_dim: 512
+  decoder_depth: 6
+  decoder_num_heads: 8
+  fim_embed_dim: 256
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 512
+  # quantizer (high path: RVQ 3x6 = 18 bits effective; bits_vq_high ignored)
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 2
+  rvq_kmeans_init: true
+  rvq_ema_decay: 0.99
+  rvq_restart_threshold: 1.0
+  # routing / FIM
+  fim_routing_threshold: 0.7
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  # optimization
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  # channel (training proxy)
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  # losses
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  # detection (skipped during training)
+  yolo_weights: ""
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  # data augmentation disabled
+  no_augment: true
+
+training_command: >
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default --data_set fish
+  --data_path ../yolo_fish_dataset_root/ --num_object_classes 1 --batch_size 2
+  --input_size 224 --patch_size 8 --encoder_embed_dim 512 --encoder_depth 8
+  --encoder_num_heads 8 --decoder_embed_dim 512 --decoder_depth 6 --decoder_num_heads 8
+  --fim_embed_dim 256 --fim_depth 2 --fim_num_heads 4 --quantizer_dim 512
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 2
+  --routing_topk 63 --no_augment --seed 42
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL
+  --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300 --opt adamw
+  --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_weights "" --yolo_conf_thres 0.4 --yolo_iou_thres 0.5
+  --inside_box_loss_weight 10 --outside_box_loss_weight 0.1
+
+provenance:
+  launcher: __AQUASC_TMP__/launch_wave7_train.sh
+  log: __AQUASC_DATA__/logs/train_final.log
+  monitor: __AQUASC_TMP__/monitor_run1_final.md
+  best_val_psnr: 26.94   # @ epoch 239
+  note: "RUN-1 died at epoch 20 (external kill); resumed from checkpoint-19.pth and completed (1d3h)."

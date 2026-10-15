@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the AquaSC paper."
+title: "AquaSC: Task-Oriented Semantic Communication for Efficient and Intelligent Aquaculture IoT Systems"
+type: software
+authors:
+  - name: "The AquaSC authors"   # TODO: replace with the author list once the paper is published
+license: MIT
+repository-code: "https://github.com/phucngvinuni/AquaSC-release"
+abstract: "Reference implementation of AquaSC (FIM-routed residual vector quantisation over a CRC-protected LDPC-coded digital link) with the evaluation, statistics and figure scripts used in the paper."

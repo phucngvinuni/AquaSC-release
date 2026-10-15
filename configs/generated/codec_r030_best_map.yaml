@@ -1,0 +1,27 @@
+# codec_r030_best_map: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: codec_r030_best_map
+role: "AquaSC retrained codec at 0.030612 uses/px (K=24, RVQ 3x6 / 0-bit low, 768 info bits, 1536 symbols)"
+checkpoint_file: checkpoint-best_map.pth
+checkpoint_dir: ckpt_codec_r030_topk24_3x6_low0
+checkpoint_sha256: 3ce5a165bafa86ddaf50ff270dce27e88514e512c1e0233b49746dc28d6e2e68
+checkpoint_epoch_tag: "best_map"
+flags:
+  batch_size: 2
+  bits_vq_low: 0
+  data_path: "__AQUASC_DATA__/yolo_fish_dataset_root/"
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_codec_r030_topk24_3x6_low0"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_codec_r030_topk24_3x6_low0/checkpoint-9.pth"
+  routing_topk: 24
+  rvq_kmeans_init: false
+  save_ckpt: true
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  start_epoch: 10
+command: >
+  python run_class_main.py --data_path __AQUASC_DATA__/yolo_fish_dataset_root/ --no_augment --output_dir ckpt_codec_r030_topk24_3x6_low0 --batch_size 2 --min_lr 1e-05 --save_ckpt --bits_vq_low 0 --quantizer_type rvq --no-rvq_kmeans_init --routing_topk 24 --outside_box_loss_weight 0.1 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --resume ckpt_codec_r030_topk24_3x6_low0/checkpoint-9.pth --start_epoch 10

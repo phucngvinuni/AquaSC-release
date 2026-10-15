@@ -1,0 +1,10 @@
+# small_stage1_distill_512d2L: this checkpoint does not store its training arguments (train_distill_transmitter_only.py saves only epoch/model).
+# The exact flags of the released run were not logged; only the facts below are known. See docs/STATUS.md.
+name: small_stage1_distill_512d2L
+role: "AquaSC-Small (512d2L, 6.4M encoder), stage 1: transmitter-only distillation"
+checkpoint_file: checkpoint-69.pth
+checkpoint_dir: ckpt_distill_tx_only_v2_512d2L
+checkpoint_sha256: 0de2ea216f900069a0889d662b0fb1f73abe1f60ba2588e5cc1361f31085ed6f
+checkpoint_epoch_tag: "69"
+flags: not-stored
+trainer: train_distill_transmitter_only.py   # teacher = flagship_r122_best_psnr; student size from the directory name (192d2L / 512d2L)

@@ -1,0 +1,25 @@
+# flagship_r122_best_psnr: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: flagship_r122_best_psnr
+role: "AquaSC headline codec (K=63, RVQ 3x6 high / 2-bit low); JointFrame 6144 symbols = 0.122449 uses/px"
+checkpoint_file: checkpoint-best_psnr.pth
+checkpoint_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL
+checkpoint_sha256: b1d2eb25419af6ed6703a4aa886eb7143a8f1f350bd50e3371dacb3cde9e2894
+checkpoint_epoch_tag: "best_psnr"
+flags:
+  batch_size: 2
+  bits_vq_low: 2
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-19.pth"
+  save_ckpt: true
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  start_epoch: 20
+  yolo_weights: ""
+command: >
+  python run_class_main.py --no_augment --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL --batch_size 2 --min_lr 1e-05 --save_ckpt --bits_vq_low 2 --quantizer_type rvq --outside_box_loss_weight 0.1 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --yolo_weights '' --resume ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-19.pth --start_epoch 20

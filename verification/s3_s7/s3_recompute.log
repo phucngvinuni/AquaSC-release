@@ -1,0 +1,64 @@
+== 3.1 shape & name alignment ==
+OK  ablation_routing_coded/aqua_base_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_base_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_bb_nofim_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_bb_nofim_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_fim_nobb_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_fim_nobb_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_detheat_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_detheat_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_oracle_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_oracle_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed43_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed43_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed44_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed44_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed45_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed45_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed46_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_seed46_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_random_snr20 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_uniform_snr10 (432, 10) pooled_len (10,)
+OK  ablation_routing_coded/aqua_full_uniform_snr20 (432, 10) pooled_len (10,)
+OK  sweep/aqua_0 (432, 10) pooled_len (10,)
+OK  sweep/aqua_10 (432, 10) pooled_len (10,)
+OK  sweep/aqua_15 (432, 10) pooled_len (10,)
+OK  sweep/aqua_20 (432, 10) pooled_len (10,)
+OK  sweep/aqua_5 (432, 10) pooled_len (10,)
+OK  sweep/aqua_m5 (432, 10) pooled_len (10,)
+OK  sweep/roi_-5 (432, 10) pooled_len (10,)
+OK  sweep/roi_0 (432, 10) pooled_len (10,)
+OK  sweep/roi_10 (432, 10) pooled_len (10,)
+OK  sweep/roi_15 (432, 10) pooled_len (10,)
+OK  sweep/roi_20 (432, 10) pooled_len (10,)
+OK  sweep/roi_5_verify (432, 10) pooled_len (10,)
+n files 34 bad 0
+
+== 3.4a Full vs ablations: stored vs recomputed ==
+10dB FIM-NoBB                   diff=+0.3183 CI[+0.2987,+0.3380] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.2988,+0.3383]
+10dB Base                       diff=+0.4123 CI[+0.3929,+0.4318] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.3931,+0.4314]
+10dB BB-NoFIM_V2                diff=+0.0674 CI[+0.0489,+0.0858] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.0489,+0.0857]
+10dB Full + oracle_box          diff=-0.0118 CI[-0.0204,-0.0036] p=0.0040 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[-0.0201,-0.0035]
+10dB Full + random              diff=+0.1832 CI[+0.1642,+0.2019] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.1644,+0.2023]
+10dB Full + uniform             diff=+0.1789 CI[+0.1592,+0.1985] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.1598,+0.1985]
+10dB Full + detector_heatmap    diff=+0.0469 CI[+0.0360,+0.0580] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.0362,+0.0581]
+20dB FIM-NoBB                   diff=+0.3335 CI[+0.3132,+0.3541] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.3132,+0.3544]
+20dB Base                       diff=+0.4324 CI[+0.4122,+0.4526] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.4122,+0.4520]
+20dB BB-NoFIM_V2                diff=+0.0711 CI[+0.0518,+0.0905] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.0518,+0.0901]
+20dB Full + oracle_box          diff=-0.0120 CI[-0.0209,-0.0034] p=0.0054 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[-0.0206,-0.0035]
+20dB Full + random              diff=+0.1919 CI[+0.1719,+0.2117] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.1722,+0.2119]
+20dB Full + uniform             diff=+0.1874 CI[+0.1666,+0.2079] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.1673,+0.2079]
+20dB Full + detector_heatmap    diff=+0.0503 CI[+0.0388,+0.0621] p=0.0000 | stored-vs-recomp maxabs=0.00e+00 | indep(seed7) CI[+0.0389,+0.0620]
+max |stored - recomputed| = 0
+
+== 3.4b sweep_full_ci.json (AquaSC vs ROI-JSCC rcpp32) ==
+ -5dB roi_dir=sweep/roi_-5 aligned=True diff -0.1106 (stored -0.1106) CI[-0.1236,-0.0978] (stored [-0.1236,-0.0978]) pooledA 0.3287/0.3287 pooledR 0.4221/0.4221
+  0dB roi_dir=sweep/roi_0 aligned=True diff +0.0023 (stored +0.0023) CI[-0.0113,+0.0162] (stored [-0.0113,+0.0162]) pooledA 0.5291/0.5291 pooledR 0.5199/0.5199
+  5dB roi_dir=roi_test_single_v1 aligned=True diff +0.0608 (stored +0.0608) CI[+0.0453,+0.0765] (stored [+0.0453,+0.0766]) pooledA 0.6405/0.6405 pooledR 0.5764/0.5764
+ 10dB roi_dir=sweep/roi_10 aligned=True diff +0.0838 (stored +0.0838) CI[+0.0681,+0.0998] (stored [+0.0681,+0.0998]) pooledA 0.6838/0.6838 pooledR 0.5990/0.5990
+ 15dB roi_dir=sweep/roi_15 aligned=True diff +0.0911 (stored +0.0911) CI[+0.0752,+0.1074] (stored [+0.0752,+0.1074]) pooledA 0.7042/0.7042 pooledR 0.6124/0.6124
+ 20dB roi_dir=sweep/roi_20 aligned=True diff +0.0897 (stored +0.0897) CI[+0.0736,+0.1063] (stored [+0.0736,+0.1063]) pooledA 0.7070/0.7070 pooledR 0.6169/0.6169
+
+== 3.4c comparison_test_v1 ==
+recomp {'mean_diff': 0.060804, 'ci_low': 0.045322, 'ci_high': 0.076552, 'p_value': 0.0} stored {'mean_diff': 0.060804, 'ci_low': 0.045322, 'ci_high': 0.076552, 'p_value': 0.0}

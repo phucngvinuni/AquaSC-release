@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+# weights, data and large intermediate files are distributed separately (docs/CHECKPOINTS.md, docs/DATA.md)
+ckpt_*/
+*.pt
+*.pth
+*.onnx
+channel_bank*.npz
+competitors/
+runs_eval/
+figs/
+outputs/
+/logs/

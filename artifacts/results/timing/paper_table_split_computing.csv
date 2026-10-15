@@ -1,0 +1,13 @@
+group,configuration,edge_ms,network_ms,server_ms,total_ms,payload_bytes,map50_10dB,psnr_10dB,note
+local_only,YOLOv8s (PyTorch),528.3,0.0,0.0,528.3,0,0.7292,inf,
+local_only,YOLOv8s (ONNX),523.0,0.0,0.0,523.0,0,0.7292,inf,
+server_only,JPEG + LDPC (Analytic),4.6,216.5,2.3,223.3,4485.6,0.0000,4.52,
+server_only,JPEG + LDPC (Monte Carlo),4.6,216.5,2.3,223.3,4485.6,0.0027,5.70,
+split,AquaSC-Large (PyTorch),3214.8,229.9,7.0,3451.6,385,0.6838,40.44,
+split,AquaSC-Large (ONNX),2506.6,229.9,7.0,2743.5,385,0.6838,40.44,
+split,AquaSC-Small,765.9,229.9,7.0,1002.8,385,0.6716,40.20,
+split,AquaSC-Tiny (PyTorch),312.9,229.9,7.1,549.9,385,0.6309,40.58,
+split,AquaSC-Tiny (ONNX),250.0,229.9,7.1,487.0,385,0.6309,40.58,
+baseline,SwinJSCC,3139.8,232.5,6.7,3379.0,50176,0.6579,38.65,
+baseline,ROI-JSCC,1225.5,232.5,3.9,1461.9,49152,0.5990,41.20,network = value of the 50176 B baseline rows; total = edge + network + server
+baseline,JSCC-CNN,37.8,232.5,3.1,273.4,50176,0.4118,31.42,

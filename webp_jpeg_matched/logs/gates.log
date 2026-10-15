@@ -1,0 +1,150 @@
+{
+  "G1_noiseless_roundtrip": {
+    "webp_low": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 2,
+      "symbols_per_image": 1536
+    },
+    "webp_mid": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 0,
+      "symbols_per_image": 3072
+    },
+    "webp_high": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 0,
+      "symbols_per_image": 6144
+    },
+    "jpeg_low": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 24,
+      "symbols_per_image": 1536
+    },
+    "jpeg_mid": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 0,
+      "symbols_per_image": 3072
+    },
+    "jpeg_high": {
+      "images": 24,
+      "exact": 24,
+      "n_capacity_marker": 0,
+      "symbols_per_image": 6144
+    }
+  },
+  "G3_payload_accounting": {
+    "webp_low": {
+      "payload_bits": 2976,
+      "info_bits_per_image": 3072,
+      "coded_bits_per_image": 6144,
+      "symbols": 1536
+    },
+    "webp_mid": {
+      "payload_bits": 5952,
+      "info_bits_per_image": 6144,
+      "coded_bits_per_image": 12288,
+      "symbols": 3072
+    },
+    "webp_high": {
+      "payload_bits": 11904,
+      "info_bits_per_image": 12288,
+      "coded_bits_per_image": 24576,
+      "symbols": 6144
+    },
+    "jpeg_low": {
+      "payload_bits": 2976,
+      "info_bits_per_image": 3072,
+      "coded_bits_per_image": 6144,
+      "symbols": 1536
+    },
+    "jpeg_mid": {
+      "payload_bits": 5952,
+      "info_bits_per_image": 6144,
+      "coded_bits_per_image": 12288,
+      "symbols": 3072
+    },
+    "jpeg_high": {
+      "payload_bits": 11904,
+      "info_bits_per_image": 12288,
+      "coded_bits_per_image": 24576,
+      "symbols": 6144
+    }
+  },
+  "G2_in_band_length": {
+    "length_block_bit_flip": "length_block_crc_fail",
+    "length_zero_valid_crc": {
+      "status": "capacity_failure_marker",
+      "returned_len": null
+    },
+    "length_gt_cap_valid_crc": {
+      "status": "length_invalid",
+      "returned_len": null
+    },
+    "length_ok_valid_crc": {
+      "status": "ok",
+      "returned_len": 300
+    },
+    "data_block_corrupt": {
+      "status": "ok",
+      "n_failed_blocks": 1,
+      "returned_len": 300,
+      "equals_orig": true
+    },
+    "receive_source_mentions_original_file": false
+  },
+  "G4_actual_symbols": {
+    "per_image_symbols_emitted": 6144,
+    "expected": 6144
+  },
+  "G5_h": {
+    "all_blocks_share_h": true,
+    "h_per_image_differs": true,
+    "h_equals_bank": true,
+    "draws_independent": true,
+    "noise_independent_across_blocks": true
+  },
+  "G6_runtime_config": {
+    "decoder_class": "LDPC5GDecoder",
+    "decoder": {
+      "_cn_update": "<function cn_update_phi at 0x7cc9476d2c00>",
+      "_vn_update": "<function vn_update_sum at 0x7cc9476d28e0>",
+      "_num_iter": "tf.Tensor(40, shape=(), dtype=int32)",
+      "_llr_max": "tf.Tensor(20.0, shape=(), dtype=float32)",
+      "_hard_out": "True",
+      "_return_infobits": "True"
+    },
+    "decoder_num_iter": 40,
+    "decoder_llr_max": 20.0,
+    "demapper_class": "Demapper",
+    "demapper_logits2llrs": "SymbolLogits2LLRs",
+    "demapper_method": "app",
+    "demapper_bits_per_symbol": 4,
+    "demapper_hard_out": false,
+    "constellation": {
+      "type": "qam",
+      "bits": 4,
+      "normalized": false,
+      "mean_symbol_energy": 0.9999998807907104
+    },
+    "encoder": {
+      "k": 1024,
+      "n": 2048,
+      "bg": "bg2",
+      "Z": 104,
+      "iLS": 6
+    },
+    "mapper_constellation_is_demapper_constellation": true,
+    "module_phy": "__AQUASC_ROOT__/experiments/matched5/phy.py"
+  },
+  "G7_capacity_failure": {
+    "flag": true,
+    "receiver_status": "capacity_failure_marker",
+    "symbols_still_transmitted": 1536
+  }
+}
+ALL GATES PASSED

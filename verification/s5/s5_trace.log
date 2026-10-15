@@ -1,0 +1,56 @@
+file bytes: 348 first 12 bytes: b'RIFFT\x01\x00\x00WEBP' RIFF size field: 340 (=file_len-8: 340 )
+source bits: 2784 payload/block: 992 n_blocks: 3 pad bits in last block: 192
+{
+ "m": 7,
+ "seed": 157,
+ "stats": {
+  "blocks": 3,
+  "failed": 1,
+  "erased_tokens": 800,
+  "bit_accuracy": 1.0,
+  "ber": 0.0,
+  "iterations_mean": 11.666666666666666
+ },
+ "blocks_failed_flags": [
+  false,
+  false,
+  true
+ ],
+ "erased_bits": 800,
+ "zero_filled_bits": 800,
+ "truncated_len": 348,
+ "returned_bits": 2784,
+ "bytes_differ_from_source": 97,
+ "riff_size_field_after": 340,
+ "pil_decodes": true,
+ "psnr_dB": 25.038035264610116,
+ "black_fallback": false
+}
+{
+ "m": 3,
+ "seed": 153,
+ "stats": {
+  "blocks": 3,
+  "failed": 1,
+  "erased_tokens": 992,
+  "bit_accuracy": 1.0,
+  "ber": 0.0,
+  "iterations_mean": 11.666666666666666
+ },
+ "blocks_failed_flags": [
+  false,
+  true,
+  false
+ ],
+ "erased_bits": 992,
+ "zero_filled_bits": 992,
+ "truncated_len": 348,
+ "returned_bits": 2784,
+ "bytes_differ_from_source": 122,
+ "riff_size_field_after": 340,
+ "pil_decodes": false,
+ "psnr_dB": 4.483520582740635,
+ "black_fallback": true,
+ "pil_error": "OSError('failed to read next frame')"
+}
+{'extra_zero_tail_64B_decodes': True, 'riff_size_zeroed_decodes': "OSError('could not create decoder object')", 'first12B_zeroed_decodes': "UnidentifiedImageError('cannot identify image file <_io.BytesIO object at 0x78e7ad211170>')", 'riff_size_oversized_decodes': "OSError('could not create decoder object')"}

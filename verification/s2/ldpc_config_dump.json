@@ -1,0 +1,187 @@
+{
+  "env": {
+    "sionna": "1.2.2",
+    "tensorflow": "2.21.0",
+    "numpy": "2.5.3",
+    "python": "3.12.3",
+    "venv": "<venv-sionna>",
+    "frozen_list": "sionna_venv_freeze.txt"
+  },
+  "aquasc_jointframe": {
+    "headline_0.122449": {
+      "base_graph": "BG2",
+      "Z": 320,
+      "lifting_set_index_iLS": 2,
+      "k_b_info_columns": 10,
+      "mother_code": {
+        "k_ldpc": 3200,
+        "n_ldpc": 16640,
+        "rows_x_cols_of_expanded_H": "13440x16640"
+      },
+      "info_bits_k": 3073,
+      "filler_bits": 127,
+      "punctured_systematic_bits_2Z": 640,
+      "rate_matched_coded_bits_n": 12288,
+      "mother_parity_bits_not_sent": 3585,
+      "code_rate_k_over_n": 0.2501,
+      "bits_per_symbol": 2,
+      "complex_symbols": 6144,
+      "encoder_num_bits_per_symbol_arg": null,
+      "decoder": {
+        "cls": "LDPC5GDecoder",
+        "cn_update": "<function cn_update_phi at 0x7d0266eea980>",
+        "num_iter": "tf.Tensor(40, shape=(), dtype=int32)",
+        "llr_max": "tf.Tensor(20.0, shape=(), dtype=float32)",
+        "hard_out": true,
+        "return_infobits": true,
+        "prune_pcm": true,
+        "early_termination": "none (fixed iterations)"
+      },
+      "mapper": "sionna.phy.mapping.Mapper(constellation_type='qam', num_bits_per_symbol=2) (default Gray labeling, unit average energy)",
+      "demapper": "sionna.phy.mapping.Demapper('app', 'qam')",
+      "channel": "one CN(0,1) Rayleigh coefficient per image (single codeword), perfect CSI zero-forcing, Es/N0 with Es=1"
+    },
+    "r061_0.061224": {
+      "base_graph": "BG2",
+      "Z": 160,
+      "lifting_set_index_iLS": 2,
+      "k_b_info_columns": 10,
+      "mother_code": {
+        "k_ldpc": 1600,
+        "n_ldpc": 8320,
+        "rows_x_cols_of_expanded_H": "6720x8320"
+      },
+      "info_bits_k": 1510,
+      "filler_bits": 90,
+      "punctured_systematic_bits_2Z": 320,
+      "rate_matched_coded_bits_n": 6144,
+      "mother_parity_bits_not_sent": 1766,
+      "code_rate_k_over_n": 0.2458,
+      "bits_per_symbol": 2,
+      "complex_symbols": 3072,
+      "encoder_num_bits_per_symbol_arg": null,
+      "decoder": {
+        "cls": "LDPC5GDecoder",
+        "cn_update": "<function cn_update_phi at 0x7d0266eea980>",
+        "num_iter": "tf.Tensor(40, shape=(), dtype=int32)",
+        "llr_max": "tf.Tensor(20.0, shape=(), dtype=float32)",
+        "hard_out": true,
+        "return_infobits": true,
+        "prune_pcm": true,
+        "early_termination": "none (fixed iterations)"
+      },
+      "mapper": "sionna.phy.mapping.Mapper(constellation_type='qam', num_bits_per_symbol=2) (default Gray labeling, unit average energy)",
+      "demapper": "sionna.phy.mapping.Demapper('app', 'qam')",
+      "channel": "one CN(0,1) Rayleigh coefficient per image (single codeword), perfect CSI zero-forcing, Es/N0 with Es=1"
+    },
+    "r030_0.030612": {
+      "base_graph": "BG2",
+      "Z": 80,
+      "lifting_set_index_iLS": 2,
+      "k_b_info_columns": 10,
+      "mother_code": {
+        "k_ldpc": 800,
+        "n_ldpc": 4160,
+        "rows_x_cols_of_expanded_H": "3360x4160"
+      },
+      "info_bits_k": 768,
+      "filler_bits": 32,
+      "punctured_systematic_bits_2Z": 160,
+      "rate_matched_coded_bits_n": 3072,
+      "mother_parity_bits_not_sent": 896,
+      "code_rate_k_over_n": 0.25,
+      "bits_per_symbol": 2,
+      "complex_symbols": 1536,
+      "encoder_num_bits_per_symbol_arg": null,
+      "decoder": {
+        "cls": "LDPC5GDecoder",
+        "cn_update": "<function cn_update_phi at 0x7d0266eea980>",
+        "num_iter": "tf.Tensor(40, shape=(), dtype=int32)",
+        "llr_max": "tf.Tensor(20.0, shape=(), dtype=float32)",
+        "hard_out": true,
+        "return_infobits": true,
+        "prune_pcm": true,
+        "early_termination": "none (fixed iterations)"
+      },
+      "mapper": "sionna.phy.mapping.Mapper(constellation_type='qam', num_bits_per_symbol=2) (default Gray labeling, unit average energy)",
+      "demapper": "sionna.phy.mapping.Demapper('app', 'qam')",
+      "channel": "one CN(0,1) Rayleigh coefficient per image (single codeword), perfect CSI zero-forcing, Es/N0 with Es=1"
+    }
+  },
+  "webp_jpeg_multiblock": {
+    "16QAM(default; WebP q=8 cap744, lowrates q=1/q=81, midrate16qam q=9, JPEG)": {
+      "base_graph": "BG2",
+      "Z": 104,
+      "lifting_set_index_iLS": 6,
+      "k_b_info_columns": 10,
+      "mother_code": {
+        "k_ldpc": 1040,
+        "n_ldpc": 5408,
+        "rows_x_cols_of_expanded_H": "4368x5408"
+      },
+      "info_bits_k": 1024,
+      "filler_bits": 16,
+      "punctured_systematic_bits_2Z": 208,
+      "rate_matched_coded_bits_n": 2048,
+      "mother_parity_bits_not_sent": 3136,
+      "code_rate_k_over_n": 0.5,
+      "bits_per_symbol": 4,
+      "complex_symbols": 512,
+      "encoder_num_bits_per_symbol_arg": null,
+      "per_block_payload_bits": "992 + 32-bit CRC = K_CB 1024",
+      "decoder": {
+        "cls": "AquaSCLDPCDecoder",
+        "cn_update": "normalized min-sum, scale 0.75",
+        "vn_update": "sum",
+        "schedule": "flooding",
+        "max_iterations": 25,
+        "chunk": 5,
+        "early_termination": "syndrome check every chunk",
+        "llr_max": 20.0,
+        "prune_pcm": true,
+        "hard_out": true,
+        "return_infobits": true
+      },
+      "demapper": "sionna Demapper('maxlog')  (digital_pipeline._demap_llr)",
+      "channel": "independent CN(0,1) Rayleigh coefficient PER LDPC BLOCK, perfect CSI, Es/N0 with Es=1",
+      "block_acceptance": "per-block CRC-32 AND syndrome-valid"
+    },
+    "QPSK(explicit; midrate q=1 cap372)": {
+      "base_graph": "BG2",
+      "Z": 104,
+      "lifting_set_index_iLS": 6,
+      "k_b_info_columns": 10,
+      "mother_code": {
+        "k_ldpc": 1040,
+        "n_ldpc": 5408,
+        "rows_x_cols_of_expanded_H": "4368x5408"
+      },
+      "info_bits_k": 1024,
+      "filler_bits": 16,
+      "punctured_systematic_bits_2Z": 208,
+      "rate_matched_coded_bits_n": 2048,
+      "mother_parity_bits_not_sent": 3136,
+      "code_rate_k_over_n": 0.5,
+      "bits_per_symbol": 2,
+      "complex_symbols": 1024,
+      "encoder_num_bits_per_symbol_arg": null,
+      "per_block_payload_bits": "992 + 32-bit CRC = K_CB 1024",
+      "decoder": {
+        "cls": "AquaSCLDPCDecoder",
+        "cn_update": "normalized min-sum, scale 0.75",
+        "vn_update": "sum",
+        "schedule": "flooding",
+        "max_iterations": 25,
+        "chunk": 5,
+        "early_termination": "syndrome check every chunk",
+        "llr_max": 20.0,
+        "prune_pcm": true,
+        "hard_out": true,
+        "return_infobits": true
+      },
+      "demapper": "sionna Demapper('maxlog')  (digital_pipeline._demap_llr)",
+      "channel": "independent CN(0,1) Rayleigh coefficient PER LDPC BLOCK, perfect CSI, Es/N0 with Es=1",
+      "block_acceptance": "per-block CRC-32 AND syndrome-valid"
+    }
+  }
+}

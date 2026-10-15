@@ -1,0 +1,76 @@
+{
+  "provenance": {
+    "checkpoint": "saved_models/ROIIT_FISH_Rayleigh_SNR010_rcpp064_PSNR_ROIJSCC_roi-largest_box_best.pt",
+    "rcpp": 64,
+    "uses_per_px": 0.09375,
+    "training_epochs_roijscc": 100,
+    "training_epochs_aquasc": 300,
+    "epoch_budget_note": "ROI-JSCC trained for 100 epochs vs AquaSC's 300 -- this asymmetry must be stated wherever this number is used in a matched-rate comparison (plan v5.9, J1).",
+    "channel_bank_sha256": "369d33f6ceeddc0190030d790077f16ca2284fa8aa9fc1dc5c1a58d219c9cddb",
+    "conf_thres": 0.001,
+    "per_image_ceiling": 0.7743,
+    "pooled_ceiling": 0.7292211
+  },
+  "by_snr": {
+    "-5.0": {
+      "mean_per_image_ap50": 0.45147159695625305,
+      "retention_per_image": 0.5830706405220885,
+      "pooled_map50": 0.38639113306999207,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.529868284214475,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snrm5.npy"
+    },
+    "0.0": {
+      "mean_per_image_ap50": 0.5240837931632996,
+      "retention_per_image": 0.6768484995005806,
+      "pooled_map50": 0.46110588014125825,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.6323265743973375,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snr0.npy"
+    },
+    "5.0": {
+      "mean_per_image_ap50": 0.5698016881942749,
+      "retention_per_image": 0.7358926620099121,
+      "pooled_map50": 0.5084689974784851,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.6972768581140687,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snr5.npy"
+    },
+    "10.0": {
+      "mean_per_image_ap50": 0.5938675999641418,
+      "retention_per_image": 0.7669735244274078,
+      "pooled_map50": 0.5332027852535248,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.7311949493144464,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snr10.npy"
+    },
+    "15.0": {
+      "mean_per_image_ap50": 0.606887698173523,
+      "retention_per_image": 0.7837888391754139,
+      "pooled_map50": 0.5476745128631592,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.7510404085443485,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snr15.npy"
+    },
+    "20.0": {
+      "mean_per_image_ap50": 0.6106563806533813,
+      "retention_per_image": 0.7886560514702071,
+      "pooled_map50": 0.5519270300865173,
+      "pooled_map50_ceiling": 0.7292211,
+      "retention_pooled": 0.7568719968285578,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "../../f1_perimage/roijscc_rcpp64_snr20.npy"
+    }
+  }
+}

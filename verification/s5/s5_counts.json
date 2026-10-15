@@ -1,0 +1,157 @@
+[
+ {
+  "point": "(a) 1d headline-matched",
+  "q": 8,
+  "mod": "16-QAM (default, undeclared)",
+  "cap": 744,
+  "n_images_enc": 432,
+  "bytes_min": 338,
+  "bytes_mean": 395.47222222222223,
+  "bytes_max": 774,
+  "over_cap_from_streams": 1,
+  "capfail_images_from_manifest": 1,
+  "manifest_images": 432,
+  "records": 25920,
+  "records_per_snr_m": [
+   432
+  ],
+  "n_snr_m": 60,
+  "blocks_min": 3,
+  "blocks_mean": 3.7587006960556844,
+  "blocks_max": 5,
+  "blocks_dist": {
+   "3": 107,
+   "4": 321,
+   "5": 3
+  },
+  "ceil_blocks_from_streams_mean": 3.7662037037037037,
+  "uses_px_mean_blocks": 0.03835408873526208,
+  "uses_px_fixed_cap": 0.061224489795918366,
+  "capfail_set_mismatch": 0
+ },
+ {
+  "point": "(b1) lowrates q=1",
+  "q": 1,
+  "mod": "16-QAM (default)",
+  "cap": null,
+  "n_images_enc": 432,
+  "bytes_min": 296,
+  "bytes_mean": 332.4537037037037,
+  "bytes_max": 458,
+  "over_cap_from_streams": null,
+  "capfail_images_from_manifest": 0,
+  "manifest_images": 432,
+  "records": 25920,
+  "records_per_snr_m": [
+   432
+  ],
+  "n_snr_m": 60,
+  "blocks_min": 3,
+  "blocks_mean": 3.048611111111111,
+  "blocks_max": 4,
+  "blocks_dist": {
+   "3": 411,
+   "4": 21
+  },
+  "ceil_blocks_from_streams_mean": 3.048611111111111,
+  "uses_px_mean_blocks": 0.03110827664399093
+ },
+ {
+  "point": "(b2) lowrates q=81",
+  "q": 81,
+  "mod": "16-QAM (default)",
+  "cap": null,
+  "n_images_enc": 432,
+  "bytes_min": 890,
+  "bytes_mean": 1178.9537037037037,
+  "bytes_max": 5698,
+  "over_cap_from_streams": null,
+  "capfail_images_from_manifest": 0,
+  "manifest_images": 432,
+  "records": 25920,
+  "records_per_snr_m": [
+   432
+  ],
+  "n_snr_m": 60,
+  "blocks_min": 8,
+  "blocks_mean": 10.027777777777779,
+  "blocks_max": 46,
+  "blocks_dist": {
+   "8": 42,
+   "9": 171,
+   "10": 121,
+   "11": 54,
+   "12": 24,
+   "13": 6,
+   "14": 3,
+   "15": 4,
+   "17": 2,
+   "19": 1,
+   "20": 1,
+   "30": 1,
+   "36": 1,
+   "46": 1
+  },
+  "ceil_blocks_from_streams_mean": 10.027777777777779,
+  "uses_px_mean_blocks": 0.10232426303854876
+ },
+ {
+  "point": "(c) midrate QPSK q=1 cap372",
+  "q": 1,
+  "mod": "QPSK explicit",
+  "cap": 372,
+  "n_images_enc": 432,
+  "bytes_min": 296,
+  "bytes_mean": 332.4537037037037,
+  "bytes_max": 458,
+  "over_cap_from_streams": 21,
+  "capfail_images_from_manifest": 21,
+  "manifest_images": 432,
+  "records": 25920,
+  "records_per_snr_m": [
+   432
+  ],
+  "n_snr_m": 60,
+  "blocks_min": 3,
+  "blocks_mean": 3.0,
+  "blocks_max": 3,
+  "blocks_dist": {
+   "3": 411
+  },
+  "ceil_blocks_from_streams_mean": 3.048611111111111,
+  "uses_px_mean_blocks": 0.061224489795918366,
+  "uses_px_fixed_cap": 0.061224489795918366,
+  "capfail_set_mismatch": 0
+ },
+ {
+  "point": "(d) midrate 16QAM q=9 cap744",
+  "q": 9,
+  "mod": "16-QAM explicit",
+  "cap": 744,
+  "n_images_enc": 432,
+  "bytes_min": 354,
+  "bytes_mean": 402.06018518518516,
+  "bytes_max": 810,
+  "over_cap_from_streams": 1,
+  "capfail_images_from_manifest": 1,
+  "manifest_images": 432,
+  "records": 25920,
+  "records_per_snr_m": [
+   432
+  ],
+  "n_snr_m": 60,
+  "blocks_min": 3,
+  "blocks_mean": 3.8770301624129933,
+  "blocks_max": 6,
+  "blocks_dist": {
+   "3": 58,
+   "4": 369,
+   "5": 3,
+   "6": 1
+  },
+  "ceil_blocks_from_streams_mean": 3.884259259259259,
+  "uses_px_mean_blocks": 0.03956153226952034,
+  "uses_px_fixed_cap": 0.061224489795918366,
+  "capfail_set_mismatch": 0
+ }
+]

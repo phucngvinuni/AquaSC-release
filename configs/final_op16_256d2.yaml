@@ -1,0 +1,91 @@
+# final_op16_256d2.yaml — RUN-2 lightweight operating point (plan §7.4).
+# Patch-16, dim-256, depth-2 encoder: ~64x lighter than patch-8/512/d8 at matched
+# accuracy (Wave-6 EDGE: OP16_256d2 mAP 0.2124 vs patch-8 0.2130 @ 10 dB).
+name: final_op16_256d2
+role: "RUN-2 lightweight operating point (patch-16 / dim-256 / depth-2)"
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL_OP16_256d2
+  best_psnr: checkpoint-best_psnr.pth   # epoch 69
+  best_psnr_epoch: 69
+  best_psnr_sha256: 580bd2b598c88164a904448104a8baf80d86ed45cb552098bfb4c82c22f79b2f
+  final: checkpoint-299.pth
+  final_sha256: c2b6346a3f4d636444e0c35eeaaa25b9242253af276ce7a82bb35ccf9e7ad0d9
+  sha256_source: __AQUASC_TMP__/monitor_wave7_final.md (cross-checked by checkpoints_sha256.txt)
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  # lighter encoder (196 tokens vs 784)
+  patch_size: 16
+  encoder_embed_dim: 256
+  encoder_depth: 2
+  encoder_num_heads: 8
+  decoder_embed_dim: 256
+  decoder_depth: 2
+  decoder_num_heads: 8
+  fim_embed_dim: 128
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 256
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 2
+  rvq_kmeans_init: true
+  rvq_ema_decay: 0.99
+  rvq_restart_threshold: 1.0
+  fim_routing_threshold: 0.7
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  yolo_weights: ""
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  no_augment: true
+
+training_command: >
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default --data_set fish
+  --data_path ../yolo_fish_dataset_root/ --num_object_classes 1 --batch_size 2
+  --input_size 224 --patch_size 16 --encoder_embed_dim 256 --encoder_depth 2
+  --encoder_num_heads 8 --decoder_embed_dim 256 --decoder_depth 2 --decoder_num_heads 8
+  --fim_embed_dim 128 --fim_depth 2 --fim_num_heads 4 --quantizer_dim 256
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 2
+  --routing_topk 63 --no_augment --seed 42
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL_OP16_256d2
+  --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300 --opt adamw
+  --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_weights "" --yolo_conf_thres 0.4 --yolo_iou_thres 0.5
+  --inside_box_loss_weight 10 --outside_box_loss_weight 0.1
+
+provenance:
+  launcher: __AQUASC_TMP__/launch_wave7_train.sh
+  log: __AQUASC_DATA__/logs/train_final_op16_256d2.log
+  monitor: __AQUASC_TMP__/monitor_wave7_final.md
+  best_val_psnr: 25.17   # @ epoch 69
+  note: "14h03m wall time; 4.49 M params (64x lighter encoder)."

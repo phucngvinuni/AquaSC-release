@@ -1,0 +1,154 @@
+{
+  "header_fields": [
+    [
+      "magic",
+      0,
+      32
+    ],
+    [
+      "version",
+      32,
+      8
+    ],
+    [
+      "config_id",
+      40,
+      8
+    ],
+    [
+      "mask_mode",
+      48,
+      8
+    ],
+    [
+      "reserved",
+      56,
+      8
+    ],
+    [
+      "n_tokens",
+      64,
+      16
+    ],
+    [
+      "k_high",
+      80,
+      16
+    ],
+    [
+      "mask_bits",
+      96,
+      16
+    ],
+    [
+      "payload_bits",
+      112,
+      24
+    ],
+    [
+      "header_crc",
+      136,
+      16
+    ]
+  ],
+  "header_total_bits": 152,
+  "header_independent_check": "magic/version/config/mask_mode/reserved/n_tokens/k_high/mask_bits/payload_bits big-endian MSB-first; CRC16 = binascii.crc_hqx(.,0xFFFF)",
+  "crc": {
+    "crc16": "CCITT-FALSE poly 0x1021 init 0xFFFF MSB-first no-reflect xorout 0 check('123456789')=0x29B1",
+    "crc32": "IEEE 802.3 reflected poly 0xEDB88320 init 0xFFFFFFFF xorout 0xFFFFFFFF; bits packed MSB-first into bytes, final partial byte zero-padded on the right; check('123456789')=0xCBF43926, check(00000000)=0x2144DF1C",
+    "crc32_coverage": "header+mask+index (everything before the 32 CRC bits) in the JointFrame (phy.pack_joint_frame)",
+    "crc16_coverage": "first 136 header bits"
+  },
+  "crc32_partial_byte_padding_verified": true,
+  "rank_convention": "rank = sum_i C(s_i, i+1), s_0<s_1<..<s_{k-1} ascending 0-indexed token positions = colexicographic index among k-subsets of {0..n-1}; verified exhaustively n=9,k=4",
+  "mask_bits_K24": 152,
+  "mask_bits_K32": 190,
+  "mask_bits_K63": 313,
+  "mask_bits_note": "mask field = enum_mask_bits(784,K)=ceil(log2 C(784,K)) bits, rank written MSB-first; JointFrame always mask_mode=3",
+  "roundtrip": {
+    "headline_K63_3x6_low2": {
+      "images": 432,
+      "frame_bits": 3073,
+      "segments": {
+        "header": 152,
+        "mask": 313,
+        "index": 2576,
+        "crc32": 32
+      },
+      "length_ok": 432,
+      "header_ok": 432,
+      "stage_major_ok": 432,
+      "crc_parse_ok": 432,
+      "mask_roundtrip_exact": 432,
+      "token_roundtrip_exact": 432,
+      "corruption_rejected": {
+        "header": true,
+        "mask": true,
+        "index": true,
+        "crc": true,
+        "truncated_by_1_bit": true
+      }
+    },
+    "r061_K32_3x4_low1": {
+      "images": 432,
+      "frame_bits": 1510,
+      "segments": {
+        "header": 152,
+        "mask": 190,
+        "index": 1136,
+        "crc32": 32
+      },
+      "length_ok": 432,
+      "header_ok": 432,
+      "stage_major_ok": 432,
+      "crc_parse_ok": 432,
+      "mask_roundtrip_exact": 432,
+      "token_roundtrip_exact": 432,
+      "corruption_rejected": {
+        "header": true,
+        "mask": true,
+        "index": true,
+        "crc": true,
+        "truncated_by_1_bit": true
+      }
+    },
+    "r030_K24_3x6_low0": {
+      "images": 432,
+      "frame_bits": 768,
+      "segments": {
+        "header": 152,
+        "mask": 152,
+        "index": 432,
+        "crc32": 32
+      },
+      "length_ok": 432,
+      "header_ok": 432,
+      "stage_major_ok": 432,
+      "crc_parse_ok": 432,
+      "mask_roundtrip_exact": 432,
+      "token_roundtrip_exact": 432,
+      "corruption_rejected": {
+        "header": true,
+        "mask": true,
+        "index": true,
+        "crc": true,
+        "truncated_by_1_bit": true
+      }
+    }
+  },
+  "index_layout_independent": {
+    "headline_K63_3x6_low2": {
+      "images_checked": 48,
+      "mismatches": 0
+    },
+    "r061_K32_3x4_low1": {
+      "images_checked": 48,
+      "mismatches": 0
+    },
+    "r030_K24_3x6_low0": {
+      "images_checked": 48,
+      "mismatches": 0
+    }
+  },
+  "index_layout": "INDEX = [stage1 x K high tokens][stage2 x K][stage3 x K][low x (784-K) low tokens]; tokens in ascending position; each value MSB-first; stage 1 = most-significant sb bits of the packed value; low field absent when b_low=0"
+}

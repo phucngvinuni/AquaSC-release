@@ -1,0 +1,31 @@
+# siteB_S3_full_finetune_ep29: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: siteB_S3_full_finetune_ep29
+role: "Site B adaptation S-3: full fine-tune of the flagship, epoch 29"
+checkpoint_file: checkpoint-29.pth
+checkpoint_dir: ckpt_siteb_s3_full_finetune
+checkpoint_sha256: 2445f498faede7d9f6b7d326b752e343fdfc25c3b97e79a5369cda64cbad9167
+checkpoint_epoch_tag: "29"
+flags:
+  batch_size: 2
+  bits_vq_low: 2
+  data_path: "__AQUASC_DATA__/yolo_fishdet_nb2_vd/"
+  epochs: 30
+  finetune_reset: true
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_siteb_s3_full_finetune"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-best_psnr.pth"
+  rvq_kmeans_init: false
+  save_ckpt: true
+  save_freq: 5
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  vq_loss_weight: 0.0
+  warmup_epochs: 3
+  yolo_weights: ""
+command: >
+  python run_class_main.py --data_path __AQUASC_DATA__/yolo_fishdet_nb2_vd/ --no_augment --output_dir ckpt_siteb_s3_full_finetune --batch_size 2 --epochs 30 --min_lr 1e-05 --warmup_epochs 3 --save_ckpt --bits_vq_low 2 --quantizer_type rvq --no-rvq_kmeans_init --outside_box_loss_weight 0.1 --vq_loss_weight 0.0 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --finetune_reset --yolo_weights '' --save_freq 5 --resume ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-best_psnr.pth

@@ -1,0 +1,14 @@
+system,cores,warmup,timed_calls,mean_ms,std_ms,note
+AquaSC flagship encoder,4,20,200,3214.81,105.07,25.3M-param encoder; Raspberry Pi 4B (Cortex-A72 1.8GHz); PyTorch eager CPU; batch 1; 224x224
+AquaSC 512d2L (Small) encoder,4,20,200,1079.94,65.13,6.4M-param distilled + Site B fine-tuned
+AquaSC 192d2L (Tiny) encoder,4,20,200,514.88,47.85,0.93M-param distilled + Site B fine-tuned
+AquaSC flagship decoder (base-station side; reference),4,20,200,3481.26,121.14,not run at the edge in deployment
+AquaSC flagship full round trip no channel (reference),4,20,200,7044.00,173.32,encoder+decoder
+YOLO local detector (best.pt),4,20,200,528.29,8.48,detect locally and transmit only results
+JSCC-CNN encoder (c=2),4,20,200,37.83,7.56,random-init weights at the deployed architecture (latency depends on shapes only)
+SwinJSCC encoder (rate=64),4,20,200,3139.81,130.45,random-init weights
+ROI-JSCC encoder (rcpp=32),4,20,200,1225.48,65.62,random-init weights; encoder + attention-mask preamble only
+YOLO local detector (best.pt),1,20,200,596.51,18.06,taskset -c 0
+JSCC-CNN encoder (c=2),1,20,200,73.31,0.98,taskset -c 0
+SwinJSCC encoder (rate=64),1,20,200,6588.57,54.15,taskset -c 0
+ROI-JSCC encoder (rcpp=32),1,20,200,1300.74,23.22,taskset -c 0

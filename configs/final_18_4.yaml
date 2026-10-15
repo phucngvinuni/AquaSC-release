@@ -1,0 +1,90 @@
+# final_18_4.yaml — RUN-3 higher-rate config (plan §14.2 rate curve).
+# RVQ 3x6 high + 4-bit low (18/4) — the retrained higher-rate point that the
+# routing_topk knob could not substitute for (fish already in top-63).
+name: final_18_4
+role: "RUN-3 higher-rate point (18/4) for the §14.2 rate-retention curve"
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL_18_4
+  best_psnr: checkpoint-best_psnr.pth   # epoch 219
+  best_psnr_epoch: 219
+  best_psnr_sha256: 9e2e5d4ee7df3a4c9f14f59cd06e25b257a436321fd6d324bd7816e92fd78a0b
+  final: checkpoint-299.pth
+  final_sha256: 5e8a470b4fb6f44cd66a65cd0e2aa74cf93f51e9cdb83c28e6967b0916523674
+  sha256_source: __AQUASC_TMP__/sha_run3.txt (cross-checked by checkpoints_sha256.txt)
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  patch_size: 8
+  encoder_embed_dim: 512
+  encoder_depth: 8
+  encoder_num_heads: 8
+  decoder_embed_dim: 512
+  decoder_depth: 6
+  decoder_num_heads: 8
+  fim_embed_dim: 256
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 512
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 4        # <-- the only difference vs final_18_2
+  rvq_kmeans_init: true
+  rvq_ema_decay: 0.99
+  rvq_restart_threshold: 1.0
+  fim_routing_threshold: 0.7
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  yolo_weights: ""
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  no_augment: true
+
+training_command: >
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default --data_set fish
+  --data_path ../yolo_fish_dataset_root/ --num_object_classes 1 --batch_size 2
+  --input_size 224 --patch_size 8 --encoder_embed_dim 512 --encoder_depth 8
+  --encoder_num_heads 8 --decoder_embed_dim 512 --decoder_depth 6 --decoder_num_heads 8
+  --fim_embed_dim 256 --fim_depth 2 --fim_num_heads 4 --quantizer_dim 512
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 4
+  --routing_topk 63 --no_augment --seed 42
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL_18_4
+  --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300 --opt adamw
+  --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_weights "" --yolo_conf_thres 0.4 --yolo_iou_thres 0.5
+  --inside_box_loss_weight 10 --outside_box_loss_weight 0.1
+
+provenance:
+  launcher: __AQUASC_TMP__/defer_run3.sh
+  log: __AQUASC_DATA__/logs/train_final_18_4.log
+  monitor: __AQUASC_TMP__/monitor_wave7_final.md
+  best_val_psnr: 26.55   # @ epoch 219
+  note: "Deferred behind RUN-2 (VRAM). 27h04m wall time."

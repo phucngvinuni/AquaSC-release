@@ -1,0 +1,8 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792010335.033847 2280408 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1792010335.034003 2280408 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792010335.686289 2280408 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1792010335.686438 2280408 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+{"codec": "webp", "budget": "mid", "quality": 9, "symbols_per_image": 3072, "file_bytes_mean": 402.06018518518516, "file_bytes_max": 810, "n_capacity_failures": 1}
+{"snr": 10.0, "seconds": 36.2, "n_undetected_crc": 0, "frac_black": 0.3423611111111111, "frac_any_block_failed": 0.425, "status_counts": {"ok": 2841, "capacity_failure_marker": 7, "length_block_crc_fail": 1472, "length_invalid": 0}, "symbols_min_mean_max": [3072, 3072.0, 3072]}

@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "bridge_images": 16,
+  "successes": 12,
+  "failures": 4,
+  "model_max_abs_error": 1.1920928955078125e-07,
+  "legacy_roundtrip": true,
+  "joint_roundtrip": true,
+  "symbols_per_image": 6144
+}

@@ -1,0 +1,48 @@
+name: siso-project-env 
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+# Training / analog-proxy evaluation environment (torch 2.1.2, CUDA 12.1).
+# The DIGITAL (LDPC) pipeline is NOT installable here: it needs Sionna >= 1.2.2,
+# which requires TensorFlow 2.21 -> numpy >= 1.26, breaking torch 2.1.2's
+# numpy < 1.26 constraint. Install Sionna in a SEPARATE CPU venv instead:
+#
+#   python -m venv /path/to/venv-sionna
+#   /path/to/venv-sionna/bin/pip install sionna    # -> sionna 1.2.2 + tensorflow 2.21 + numpy 2.2.6 + scipy
+#   /path/to/venv-sionna/bin/python test_digital_pipeline.py
+#
+# The eval loop talks to that venv over a subprocess bridge
+# (digital_client.py <-> digital_bridge.py); point --digital_bridge_python at it
+# (default /tmp/opencode/venv-sionna/bin/python). See reports/wave4_channel.md.
+
+dependencies:
+
+  - python=3.10
+  - pip
+  
+
+  - pytorch::pytorch=2.1.2
+  - pytorch::torchvision
+  - pytorch::torchaudio
+  - pytorch-cuda=12.1
+  
+  - numpy<1.26  
+  - cython
+  - tqdm
+  - matplotlib
+  - pillow            # PIL (datasets.py / codec_baseline.py / baselinea_score.py)
+  - scipy             # stats.py (statistical protocol; has a pure-numpy fallback)
+
+  - pip:
+    - ultralytics
+    - timm==0.9.12  
+    - torchmetrics[detection]
+    - opencv-python 
+    - lpips
+    - einops           # only required by the ROI-JSCC competitor, not AquaSC itself
+    - pytorch-msssim
+    - torch_optimizer
+    - imagehash        # quantify_leakage.py (leakage analysis, optional)

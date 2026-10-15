@@ -1,0 +1,93 @@
+# legacy_aug.yaml — Wave-4 AUG retrain (P0-4 augmentation, Wave-3-parity).
+# RVQ 3x6 + 2-bit low, 300 epochs, WITH the P0-4 augmentation, RVQFIX defaults
+# neutralized to preserve Wave-3 quantizer dynamics. This is the model whose
+# detection collapsed 14x under augmentation (wave-6 SWEEP finding, later
+# cleared as a genuine effect by AUDIT-AUG).
+name: legacy_aug
+role: "Wave-4 AUG retrain (P0-4 augmentation), 300 epochs, RVQFIX-neutralized"
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_RVQ_AUG
+  best_psnr: checkpoint-best_psnr.pth   # epoch 119
+  best_psnr_epoch: 119
+  best_psnr_sha256: b5b3e693d2d6eb1a3b60e8d1960e9d361eaef246faa859c4f4acc47206bf5f40
+  final: checkpoint-299.pth
+  final_sha256: 39fa2b7eace04ac502dcea1d00f8ab61ad45d8387701c40d0f4cc219614413ab
+  sha256_source: reports/wave4_aug.md (cross-checked by checkpoints_sha256.txt)
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  patch_size: 8
+  encoder_embed_dim: 512
+  encoder_depth: 8
+  encoder_num_heads: 8
+  decoder_embed_dim: 512
+  decoder_depth: 6
+  decoder_num_heads: 8
+  fim_embed_dim: 256
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 512
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 2
+  fim_routing_threshold: 0.6
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  # RVQFIX neutralized (Wave-3-parity quantizer dynamics):
+  rvq_kmeans_init: false
+  rvq_ema_decay: 0.0
+  rvq_restart_threshold: 0.0
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  yolo_weights: best.pt
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  # augmentation ON (datasets.py default; no --no_augment)
+  no_augment: false
+
+training_command: >
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_RVQ_AUG
+  --data_set fish --data_path ../yolo_fish_dataset_root/ --num_object_classes 1
+  --batch_size 2 --input_size 224 --patch_size 8 --encoder_embed_dim 512
+  --encoder_depth 8 --encoder_num_heads 8 --decoder_embed_dim 512 --decoder_depth 6
+  --decoder_num_heads 8 --fim_embed_dim 256 --fim_depth 2 --fim_num_heads 4
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 2
+  --routing_topk 63 --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300
+  --opt adamw --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_conf_thres 0.4 --yolo_iou_thres 0.5 --inside_box_loss_weight 10
+  --outside_box_loss_weight 0.1 --fim_routing_threshold 0.6 --rvq_ema_decay 0
+  --no-rvq_kmeans_init --rvq_restart_threshold 0 --seed 42
+
+provenance:
+  log: __AQUASC_DATA__/logs/train_rvq_aug.log
+  report: reports/wave4_aug.md
+  best_val_psnr: 23.81   # @ epoch 119
+  note: "21h12m wall time. Augmentation traded peak memorization for generalization."

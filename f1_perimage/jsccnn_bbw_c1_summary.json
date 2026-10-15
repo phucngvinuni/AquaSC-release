@@ -1,0 +1,81 @@
+{
+  "provenance": {
+    "site": "A",
+    "variant": "bbw",
+    "c": 1,
+    "checkpoint": "__AQUASC_ROOT__/competitors/jscc/output_jscc_baselinea/bbw_c1_snr10_ratio0.0417/checkpoints/best_psnr.pkl",
+    "uses_per_px": 0.0625,
+    "per_image_ceiling": 0.7743,
+    "pooled_ceiling": 0.7292211,
+    "conf_thres": 0.001,
+    "channel_replay_method": "direct encoder()/decoder() calls + a standalone reimplementation of channel.py's Rayleigh math (h, AWGN from the seeded bank instead of internal torch.randn) -- model.forward()/channel_layer are not used for this measurement."
+  },
+  "by_snr": {
+    "-5": {
+      "mean_per_image_ap50": 0.3029719591140747,
+      "ci_low": 0.28915954835274194,
+      "ci_high": 0.3174377490938948,
+      "retention_per_image": 0.3912849788377563,
+      "pooled_map50": 0.17781731784343718,
+      "retention_pooled": 0.24384554676686837,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snrm5.npy"
+    },
+    "0": {
+      "mean_per_image_ap50": 0.4041922390460968,
+      "ci_low": 0.38781071480674045,
+      "ci_high": 0.42139848319434176,
+      "retention_per_image": 0.5220098657446685,
+      "pooled_map50": 0.29661106765270234,
+      "retention_pooled": 0.4067505282728412,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snr0.npy"
+    },
+    "5": {
+      "mean_per_image_ap50": 0.45851171016693115,
+      "ci_low": 0.44055314130684425,
+      "ci_high": 0.47705250201277655,
+      "retention_per_image": 0.5921628699043409,
+      "pooled_map50": 0.37781372368335725,
+      "retention_pooled": 0.5181058579947252,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snr5.npy"
+    },
+    "10": {
+      "mean_per_image_ap50": 0.4870459735393524,
+      "ci_low": 0.46772446573948534,
+      "ci_high": 0.5069191905729423,
+      "retention_per_image": 0.6290145596530445,
+      "pooled_map50": 0.41057687997817993,
+      "retention_pooled": 0.5630348326154851,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snr10.npy"
+    },
+    "15": {
+      "mean_per_image_ap50": 0.5038498640060425,
+      "ci_low": 0.4840829365554749,
+      "ci_high": 0.5243454709769813,
+      "retention_per_image": 0.650716600808527,
+      "pooled_map50": 0.43369105756282805,
+      "retention_pooled": 0.5947319099280425,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snr15.npy"
+    },
+    "20": {
+      "mean_per_image_ap50": 0.5086449980735779,
+      "ci_low": 0.4885326661201867,
+      "ci_high": 0.5290868694187641,
+      "retention_per_image": 0.656909464127054,
+      "pooled_map50": 0.43972739577293396,
+      "retention_pooled": 0.6030096986674329,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c1_snr20.npy"
+    }
+  }
+}

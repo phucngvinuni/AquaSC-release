@@ -1,0 +1,19 @@
+{
+  "split": "test",
+  "site": "b",
+  "checkpoint": "__AQUASC_ROOT__/ckpt_siteb_s4_ema0p9/checkpoint-9.pth",
+  "checkpoint_sha256": "8b685f52b8d8e7fb5a165f426f2d54740e9d003985ae7bd38211dc2677a1882c",
+  "encoder_embed_dim": 512,
+  "encoder_depth": 8,
+  "encoder_num_heads": 8,
+  "rvq_stages": 3,
+  "rvq_bits_per_stage": 6,
+  "bits_vq_low": 2,
+  "routing_topk": 63,
+  "disable_fim": false,
+  "router": "fim",
+  "router_seed": 42,
+  "n": 455,
+  "decoder_parity_max_abs_error": 1.1920928955078125e-07,
+  "contents": "source encoder output only; not channel evaluation"
+}

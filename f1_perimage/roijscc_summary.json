@@ -1,0 +1,74 @@
+{
+  "-5.0": {
+    "mean_per_image_ap50": 0.4900779128074646,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snrm5.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.6720566818588555,
+    "retention": 0.6329047150119355,
+    "ceiling_used": 0.774331271648407
+  },
+  "-3.0": {
+    "mean_per_image_ap50": 0.5391535758972168,
+    "in_bank": false,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snrm3.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.7393554244346698,
+    "retention": 0.6962828386737621,
+    "ceiling_used": 0.774331271648407
+  },
+  "-1.0": {
+    "mean_per_image_ap50": 0.5730480551719666,
+    "in_bank": false,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snrm1.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.7858358118984305,
+    "retention": 0.7400554209208857,
+    "ceiling_used": 0.774331271648407
+  },
+  "0.0": {
+    "mean_per_image_ap50": 0.581165075302124,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snr0.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.7969668942685888,
+    "retention": 0.7505380404757925,
+    "ceiling_used": 0.774331271648407
+  },
+  "5.0": {
+    "mean_per_image_ap50": 0.6348150968551636,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snr5.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.8705385744531577,
+    "retention": 0.819823659586627,
+    "ceiling_used": 0.774331271648407
+  },
+  "10.0": {
+    "mean_per_image_ap50": 0.6559685468673706,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snr10.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.8995468546746256,
+    "retention": 0.8471420061221805,
+    "ceiling_used": 0.774331271648407
+  },
+  "15.0": {
+    "mean_per_image_ap50": 0.6681799292564392,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snr15.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.9162926432825919,
+    "retention": 0.8629122363016654,
+    "ceiling_used": 0.774331271648407
+  },
+  "20.0": {
+    "mean_per_image_ap50": 0.6727293729782104,
+    "in_bank": true,
+    "M": 10,
+    "out_path": "f1_perimage/roijscc_snr20.npy",
+    "retention_pooled_ceiling_DEPRECATED": 0.9225314146535399,
+    "retention": 0.8687875559333862,
+    "ceiling_used": 0.774331271648407
+  }
+}

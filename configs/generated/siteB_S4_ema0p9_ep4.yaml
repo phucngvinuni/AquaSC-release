@@ -1,0 +1,32 @@
+# siteB_S4_ema0p9_ep4: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: siteB_S4_ema0p9_ep4
+role: "Site B adaptation S-4 (RVQ EMA decay 0.9), epoch 4"
+checkpoint_file: checkpoint-4.pth
+checkpoint_dir: ckpt_siteb_s4_ema0p9
+checkpoint_sha256: 05ecea27c1abb7587efabf76d0f45ea544b275d9875bf412c88944a9dec7fc85
+checkpoint_epoch_tag: "4"
+flags:
+  batch_size: 2
+  bits_vq_low: 2
+  data_path: "__AQUASC_DATA__/yolo_fishdet_nb2_vd/"
+  epochs: 15
+  finetune_reset: true
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_siteb_s4_ema0p9"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_siteb_s3_full_finetune/checkpoint-29.pth"
+  rvq_ema_decay: 0.9
+  rvq_kmeans_init: false
+  save_ckpt: true
+  save_freq: 5
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  vq_loss_weight: 0.0
+  warmup_epochs: 2
+  yolo_weights: ""
+command: >
+  python run_class_main.py --data_path __AQUASC_DATA__/yolo_fishdet_nb2_vd/ --no_augment --output_dir ckpt_siteb_s4_ema0p9 --batch_size 2 --epochs 15 --min_lr 1e-05 --warmup_epochs 2 --save_ckpt --bits_vq_low 2 --quantizer_type rvq --no-rvq_kmeans_init --rvq_ema_decay 0.9 --outside_box_loss_weight 0.1 --vq_loss_weight 0.0 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --finetune_reset --yolo_weights '' --save_freq 5 --resume ckpt_siteb_s3_full_finetune/checkpoint-29.pth

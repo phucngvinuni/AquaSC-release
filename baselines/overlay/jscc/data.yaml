@@ -1,0 +1,8 @@
+# Honest video-disjoint split (Site A) — fixed by BASELINE-A (Wave 5, P0-5).
+# Original file used relative paths (../train/images etc.) pointing at a leaked/merged split.
+train: __AQUASC_DATA__/yolo_fish_dataset_root/train/images
+val: __AQUASC_DATA__/yolo_fish_dataset_root/valid/images
+test: __AQUASC_DATA__/yolo_fish_dataset_root/test/images
+
+nc: 1
+names: ['fish']

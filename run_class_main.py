@@ -1,0 +1,532 @@
+# run_class_main.py
+import sys
+import os
+import torch.multiprocessing as mp
+# --- Ensure local modules are prioritized ---
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
+# --- Explicitly import your model definition file HERE ---
+import model # Ensures model registration with timm
+# -------------------------------------------------------
+
+import datetime
+import numpy as np
+import time
+import torch
+import torch.nn as nn
+import torch.backends.cudnn as cudnn
+from ultralytics import YOLO
+from pathlib import Path
+
+import utils
+import engine1
+from base_args import get_args
+import datasets
+import optim_factory
+import csv
+
+NativeScaler = utils.NativeScalerWithGradNormCount
+
+try:
+    import lpips
+    LPIPS_AVAILABLE = True
+except ImportError:
+    LPIPS_AVAILABLE = False
+    print("Warning: lpips library not found. Perceptual loss will be skipped. `pip install lpips`")
+
+
+def seed_initial(seed=0, rank=0):
+    actual_seed = seed + rank
+    np.random.seed(actual_seed)
+    torch.manual_seed(actual_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(actual_seed)
+        if torch.cuda.device_count() > 1:
+             torch.cuda.manual_seed_all(actual_seed)
+    print(f"Seed set to {actual_seed} (base_seed={seed}, rank={rank})")
+
+
+def main(args):
+    utils.init_distributed_mode(args)
+    device = torch.device(args.device)
+    seed_initial(seed=args.seed, rank=utils.get_rank())
+
+    if hasattr(args, 'digital_bridge_python'):
+        import digital_client
+        digital_client.set_bridge_python(args.digital_bridge_python)
+
+    lpips_criterion_instance = None
+    if LPIPS_AVAILABLE and hasattr(args, 'lpips_loss_weight') and args.lpips_loss_weight > 0:
+        try:
+            lpips_criterion_instance = lpips.LPIPS(net='alex', verbose=False).to(device)
+            print(f"Using LPIPS perceptual loss with weight: {args.lpips_loss_weight}")
+        except Exception as e_lpips:
+            print(f"Error initializing LPIPS: {e_lpips}. LPIPS loss will be skipped.")
+            lpips_criterion_instance = None
+    elif hasattr(args, 'lpips_loss_weight') and args.lpips_loss_weight > 0 and not LPIPS_AVAILABLE:
+        print("LPIPS loss weight > 0 but lpips library not available. LPIPS loss will be skipped.")
+
+
+    print(f"Creating SemCom model: {args.model}")
+    semcom_model = utils.get_model(args)
+
+    if args.patch_size > 0:
+        args.window_size = (args.input_size // args.patch_size, args.input_size // args.patch_size)
+    else:
+        args.window_size = (args.input_size // 16, args.input_size // 16)
+        print(f"Warning: args.patch_size is not positive. Using default 16x16 assumption for window_size.")
+    print(f"Derived SemCom Patch Grid (window_size): {args.window_size} for input_size {args.input_size} using patch_size {args.patch_size}")
+
+    optimizer = optim_factory.create_optimizer(args, semcom_model)
+    loss_scaler = NativeScaler() if args.device == 'cuda' and torch.cuda.is_available() else None
+
+    # --- Resume Logic ---
+    if args.resume:
+        print(f"INFO: --resume flag is set to: {args.resume}")
+        if os.path.exists(args.resume):
+            print(f"INFO: Checkpoint file found at {args.resume}.")
+            # Pass the optimizer and scaler instances to be potentially updated
+            try:
+                load_successful = utils.load_custom_checkpoint(
+                    model_to_load=semcom_model,
+                    checkpoint_path=args.resume,
+                    model_key_in_ckpt='model|state_dict', # Try common keys
+                    optimizer_to_load=optimizer,      # Pass optimizer instance
+                    loss_scaler_to_load=loss_scaler,    # Pass scaler instance
+                    args_for_epoch_resume=args        # Pass args object to update start_epoch
+                )
+            except RuntimeError as e_load:
+                print(f"FATAL: Checkpoint load failed for {args.resume}: {e_load}")
+                if args.eval:
+                    sys.exit(1)
+                raise
+            if load_successful:
+                print(f"INFO: load_custom_checkpoint reported success. args.start_epoch is now: {args.start_epoch}")
+            else:
+                print(f"FATAL: load_custom_checkpoint reported failure for {args.resume}. Refusing to continue with a randomly initialized model.")
+                sys.exit(1)
+        else:
+            print(f"WARNING: Resume checkpoint file NOT FOUND at {args.resume}. Training from scratch.")
+            if args.eval:
+                print("FATAL: Evaluation requires a checkpoint (--resume). Exiting.")
+                sys.exit(1)
+            args.start_epoch = 0
+    else:
+        print("INFO: --resume flag not set. Training from scratch.")
+        args.start_epoch = 0 # Ensure it's 0 if not resuming
+
+    semcom_model.to(device)
+    model_without_ddp = semcom_model # For single GPU
+
+    # --- Encoder distillation (2026-09-17): a frozen, larger-encoder teacher
+    # forces this run's (typically smaller-encoder) student to match its
+    # pre-quantization projected feature via an MSE loss added in engine1.py.
+    # Teacher architecture is described by --distill_teacher_encoder_*
+    # (defaults to the flagship's 512/8/8); everything else (decoder, FIM,
+    # quantizer, routing) is assumed identical to this run's own --decoder_*/
+    # --fim_*/--quantizer_* flags, since only the encoder is meant to differ.
+    teacher_model = None
+    if getattr(args, 'distill_teacher_ckpt', None):
+        import copy
+        teacher_args = copy.deepcopy(args)
+        teacher_args.encoder_embed_dim = args.distill_teacher_encoder_embed_dim
+        teacher_args.encoder_depth = args.distill_teacher_encoder_depth
+        teacher_args.encoder_num_heads = args.distill_teacher_encoder_num_heads
+        print(f"INFO: [DISTILL] building teacher with encoder_embed_dim="
+              f"{teacher_args.encoder_embed_dim}, encoder_depth={teacher_args.encoder_depth}, "
+              f"encoder_num_heads={teacher_args.encoder_num_heads}")
+        teacher_model = utils.get_model(teacher_args)
+        teacher_sd = torch.load(args.distill_teacher_ckpt, map_location='cpu')
+        for key in ('model', 'state_dict'):
+            if isinstance(teacher_sd, dict) and key in teacher_sd:
+                teacher_sd = teacher_sd[key]
+                break
+        missing, unexpected = teacher_model.load_state_dict(teacher_sd, strict=True)
+        assert not missing and not unexpected, (
+            f"INFO: [DISTILL] teacher checkpoint load was not a clean strict match: "
+            f"missing={missing} unexpected={unexpected}")
+        teacher_model.to(device)
+        teacher_model.eval()
+        for p in teacher_model.parameters():
+            p.requires_grad = False
+        print(f"INFO: [DISTILL] teacher loaded strict=True from {args.distill_teacher_ckpt}, "
+              f"frozen. distill_weight_feat={args.distill_weight_feat} "
+              f"distill_weight_cos={args.distill_weight_cos} "
+              f"distill_weight_quant={args.distill_weight_quant} "
+              f"distill_weight_idx={args.distill_weight_idx} "
+              f"distill_weight_fim={args.distill_weight_fim} "
+              f"distill_task_weight={args.distill_task_weight}")
+
+        if getattr(args, 'distill_init_from_teacher', False):
+            teacher_full_sd = torch.load(args.distill_teacher_ckpt, map_location='cpu')
+            for key in ('model', 'state_dict'):
+                if isinstance(teacher_full_sd, dict) and key in teacher_full_sd:
+                    teacher_full_sd = teacher_full_sd[key]
+                    break
+            student_sd = model_without_ddp.state_dict()
+            copied, skipped_shape, skipped_missing = [], [], []
+            for k, v in teacher_full_sd.items():
+                if k not in student_sd:
+                    skipped_missing.append(k)
+                elif student_sd[k].shape != v.shape:
+                    skipped_shape.append(k)
+                else:
+                    student_sd[k] = v.clone()
+                    copied.append(k)
+            model_without_ddp.load_state_dict(student_sd, strict=True)
+            print(f"INFO: [DISTILL] --distill_init_from_teacher: warm-started {len(copied)} "
+                  f"tensors from the teacher (shape-matched, encoder-independent submodules -- "
+                  f"decoder/quantizer/FIM-head/channel_to_decoder_proj/norm_before_quantizer); "
+                  f"{len(skipped_shape)} tensors kept randomly initialized (shape mismatch, "
+                  f"i.e. img_encoder/fim_module.*.0/encoder_to_channel_proj); "
+                  f"{len(skipped_missing)} teacher keys had no matching student key.")
+
+    # --- Selective freezing (S-2/S-2b, Wave 14 dispatch, plan 16.13): after
+    # --resume loads the flagship weights, freeze whichever submodules the
+    # arm under test is not allowed to update. requires_grad_(False) stops
+    # the gradient/optimizer path; RVQ codebooks also update via EMA
+    # *outside* the optimizer (model_util.py, gated on `self.training`), so
+    # --freeze_codebooks additionally forces those submodules to .eval() --
+    # done here AND re-applied every epoch below, since the training loop
+    # calls semcom_model.train() (which would otherwise re-arm EMA) once per
+    # epoch.
+    # Rule 13 (plan v7.3): requires_grad_(False) only stops the gradient/optimizer
+    # path. It does NOT stop code that writes directly into a buffer/.data --
+    # BatchNorm running_mean/running_var update on every forward() in .train()
+    # mode regardless of requires_grad (img_decoder's CNN head has BatchNorm2d),
+    # and RVQ's per-epoch dead-code restart (model_util.py restart_dead_codewords,
+    # called unconditionally from engine1.py whenever rvq_restart_threshold>0)
+    # mutates codebook weights directly, also bypassing requires_grad. Both were
+    # found live in a running --freeze_decoder --freeze_codebooks job via a
+    # before/after tensor checksum (frozen submodules must be verified this way,
+    # never trusted from the flag alone) and are fixed below: every frozen
+    # submodule is kept in .eval() every epoch (not just the codebooks), and the
+    # dead-code restart is skipped entirely when --freeze_codebooks is set.
+    _FROZEN_MODULES = {}
+    if getattr(args, 'freeze_encoder', False):
+        semcom_model.img_encoder.requires_grad_(False)
+        _FROZEN_MODULES['img_encoder'] = semcom_model.img_encoder
+    if getattr(args, 'freeze_decoder', False):
+        semcom_model.img_decoder.requires_grad_(False)
+        semcom_model.channel_to_decoder_proj.requires_grad_(False)
+        _FROZEN_MODULES['img_decoder'] = semcom_model.img_decoder
+        _FROZEN_MODULES['channel_to_decoder_proj'] = semcom_model.channel_to_decoder_proj
+    if getattr(args, 'freeze_fim', False):
+        semcom_model.fim_module.requires_grad_(False)
+        _FROZEN_MODULES['fim_module'] = semcom_model.fim_module
+    if getattr(args, 'freeze_codebooks', False):
+        semcom_model.quantizer_high.requires_grad_(False)
+        semcom_model.quantizer_low.requires_grad_(False)
+        _FROZEN_MODULES['quantizer_high'] = semcom_model.quantizer_high
+        _FROZEN_MODULES['quantizer_low'] = semcom_model.quantizer_low
+    _FROZEN_SUBMODULES = list(_FROZEN_MODULES.keys())
+
+    def _reapply_codebook_freeze_eval():
+        """Call after every semcom_model.train(): the per-epoch .train() call
+        re-enables buffer-level updates (BatchNorm running stats, RVQ EMA) on
+        every frozen submodule unless each is explicitly put back in .eval()."""
+        for m in _FROZEN_MODULES.values():
+            m.eval()
+
+    if _FROZEN_SUBMODULES:
+        n_total = sum(p.numel() for p in semcom_model.parameters())
+        n_trainable = sum(p.numel() for p in semcom_model.parameters() if p.requires_grad)
+        print(f"INFO: frozen submodules: {_FROZEN_SUBMODULES}")
+        print(f"INFO: trainable parameters: {n_trainable}/{n_total} = {100*n_trainable/n_total:.4f}%")
+        _reapply_codebook_freeze_eval()
+
+    # --- Fine-tune reset (Wave 5 CHANNEL-cont): resume weights, but start a fresh
+    # optimizer + LR schedule for a short fine-tune from epoch 0. ---
+    if getattr(args, 'finetune_reset', False) and not args.eval:
+        print("INFO: --finetune_reset: resetting start_epoch to 0 and rebuilding optimizer/scaler.")
+        args.start_epoch = 0
+        optimizer = optim_factory.create_optimizer(args, semcom_model)
+        loss_scaler = NativeScaler() if args.device == 'cuda' and torch.cuda.is_available() else None
+
+    # --- Load YOLO Model ---
+    yolo_model = None
+    if args.yolo_weights and os.path.exists(args.yolo_weights):
+        print(f"Loading YOLO model from: {args.yolo_weights}")
+        try:
+            yolo_model = YOLO(args.yolo_weights)
+            if hasattr(yolo_model, 'fuse') and callable(yolo_model.fuse): yolo_model.fuse()
+            # Set YOLO to eval mode
+            if hasattr(yolo_model, 'model') and hasattr(yolo_model.model, 'eval'): yolo_model.model.eval()
+            elif hasattr(yolo_model, 'eval'): yolo_model.eval()
+            print("YOLO model loaded and prepared for evaluation.")
+        except Exception as e:
+            print(f"  Error loading YOLO model: {e}. Proceeding without YOLO evaluation.")
+            yolo_model = None
+    else:
+        print(f"YOLO weights path '{args.yolo_weights}' not found or not specified. No YOLO evaluation.")
+
+    # --- Datasets and Dataloaders ---
+    print("Building train dataset...")
+    trainset = datasets.build_dataset(is_train=True, args=args)
+    print("Building validation dataset...")
+    valset = datasets.build_dataset(is_train=False, args=args)
+
+    if not trainset or len(trainset) == 0: print("ERROR: Training dataset is empty!"); exit(1)
+
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=args.batch_size, shuffle=True,
+        num_workers=args.num_workers, pin_memory=False,
+        drop_last=True, collate_fn=datasets.yolo_collate_fn,
+        persistent_workers=(args.num_workers > 0)
+    )
+    dataloader_val = None
+    if valset and len(valset) > 0:
+        print(f"INFO: Validation dataloader will use batch_size=1 for digital pipeline evaluation.")
+        dataloader_val = torch.utils.data.DataLoader(
+            valset, 
+            batch_size=1, # <--- SỬA THÀNH 1 Ở ĐÂY
+            shuffle=False,
+            num_workers=args.num_workers, 
+            pin_memory=args.pin_mem,
+            drop_last=False, 
+            collate_fn=datasets.yolo_collate_fn
+        )
+    else:
+        print("Validation dataset is empty or could not be loaded. Validation will be skipped.")
+
+    # --- LR Schedulers ---
+    num_training_steps_per_epoch = len(trainloader)
+    if num_training_steps_per_epoch == 0: print("ERROR - Training dataloader is empty!"); exit(1)
+    print(f"Number of training batches (steps) per epoch: {num_training_steps_per_epoch}")
+
+    lr_schedule_values = utils.cosine_scheduler(args.lr, args.min_lr, args.epochs, num_training_steps_per_epoch, warmup_epochs=args.warmup_epochs, warmup_steps=args.warmup_steps)
+    wd_schedule_values = None
+    if args.weight_decay > 0 and (args.weight_decay_end is None or args.weight_decay_end != args.weight_decay): # Only if scheduling WD
+        wd_schedule_values = utils.cosine_scheduler(args.weight_decay, args.weight_decay_end if args.weight_decay_end is not None else args.weight_decay, args.epochs, num_training_steps_per_epoch)
+        if wd_schedule_values is not None: print(f"  Weight Decay Schedule: Max WD = {max(wd_schedule_values):.7f}, Min WD = {min(wd_schedule_values):.7f}")
+
+    # --- Loss Criterions ---
+    base_reconstruction_criterion = utils.sel_criterion(args).to(device) # L1Loss(reduction='none')
+    fim_criterion = nn.BCEWithLogitsLoss().to(device)
+
+    # --- Evaluation Only Mode ---
+    if args.eval:
+        print(f"Evaluation mode selected (args.eval=True) for SNR = {args.snr_db_eval} dB.")
+        
+        # Tạo thư mục visualize nếu cần
+        eval_viz_dir_path = Path(args.eval_viz_output_dir) / f"eval_run_snr{args.snr_db_eval}"
+        eval_viz_dir_path.mkdir(parents=True, exist_ok=True)
+
+        if dataloader_val is None: 
+            print("  Validation dataloader not available. Skipping eval.")
+            exit(0)
+        
+        print("  Starting evaluation-only run...")
+        test_stats = engine1.evaluate_semcom_with_yolo(
+            semcom_net=semcom_model, yolo_model=yolo_model, dataloader=dataloader_val,
+            device=device, reconstruction_criterion=base_reconstruction_criterion,
+            fim_criterion=fim_criterion, lpips_criterion=lpips_criterion_instance, args=args,
+            current_epoch_num=f"eval_snr_{args.snr_db_eval}", 
+            viz_output_dir=str(eval_viz_dir_path),
+            save_recons_dir=(args.save_recons_dir if getattr(args, 'save_recons_dir', '') else None)
+        )
+        print(f"\n--- Final Evaluation Results (SNR: {args.snr_db_eval} dB) ---")
+        for key, val in test_stats.items():
+            if isinstance(val, (float, int)): 
+                print(f"  {key}: {val:.4f}")
+        
+        # ==========================================================
+        # === [!] BẮT ĐẦU LOGIC GHI FILE CSV MỚI [!] ===
+        # ==========================================================
+        if args.csv_log_file:
+            print(f"  Logging results to {args.csv_log_file}...")
+            snr = args.snr_db_eval
+            psnr = test_stats.get('psnr', 'N/A')
+            ssim = test_stats.get('ssim', 'N/A')
+            map_50 = test_stats.get('map_50', 'N/A') # torchmetrics trả về key 'map_50'
+            map_total = test_stats.get('map', 'N/A')   # và 'map'
+
+            file_mode = 'a' if args.append_csv else 'w'
+            file_exists = os.path.isfile(args.csv_log_file)
+
+            digital_ldpc = getattr(args, 'digital_ldpc', False)
+            fieldnames = ['SNR_dB', 'PSNR', 'SSIM', 'mAP_50', 'mAP']
+            if digital_ldpc:
+                fieldnames += ['digital_blocks', 'digital_failed', 'digital_bler',
+                               'digital_ber', 'digital_bit_accuracy',
+                               'digital_erased_tokens', 'digital_erased_token_fraction',
+                               'digital_iterations_mean']
+
+            try:
+                with open(args.csv_log_file, mode=file_mode, newline='') as csv_file:
+                    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+                    if not file_exists or file_mode == 'w':
+                        writer.writeheader()
+                    row = {
+                        'SNR_dB': f"{snr:.1f}",
+                        'PSNR': f"{psnr:.4f}" if isinstance(psnr, float) else psnr,
+                        'SSIM': f"{ssim:.4f}" if isinstance(ssim, float) else ssim,
+                        'mAP_50': f"{map_50:.4f}" if isinstance(map_50, float) else map_50,
+                        'mAP': f"{map_total:.4f}" if isinstance(map_total, float) else map_total
+                    }
+                    if digital_ldpc:
+                        row.update({
+                            'digital_blocks': test_stats.get('digital_blocks', 'N/A'),
+                            'digital_failed': test_stats.get('digital_failed', 'N/A'),
+                            'digital_bler': f"{test_stats.get('digital_bler', float('nan')):.4f}",
+                            'digital_ber': f"{test_stats.get('digital_ber', float('nan')):.4f}",
+                            'digital_bit_accuracy': f"{test_stats.get('digital_bit_accuracy', float('nan')):.4f}",
+                            'digital_erased_tokens': test_stats.get('digital_erased_tokens', 'N/A'),
+                            'digital_erased_token_fraction': f"{test_stats.get('digital_erased_token_fraction', float('nan')):.4f}",
+                            'digital_iterations_mean': f"{test_stats.get('digital_iterations_mean', float('nan')):.2f}",
+                        })
+                    writer.writerow(row)
+                print(f"  Successfully wrote results for SNR {snr} to CSV.")
+            except Exception as e:
+                print(f"  ERROR: Could not write to CSV file {args.csv_log_file}. Error: {e}")
+
+        # ==========================================================
+        # === [!] KẾT THÚC LOGIC GHI FILE CSV [!] ===
+        # ==========================================================
+
+        sys.stdout.flush()
+        exit(0) # Vẫn thoát sau khi hoàn thành một lần eval
+
+    # --- RVQFIX (plan 7.2): k-means initialization of RVQ codebooks from real
+    # encoder features, before training (skipped when resuming an existing run). ---
+    if (not args.eval and args.start_epoch == 0
+            and getattr(args, 'quantizer_type', 'flat') == 'rvq'
+            and getattr(args, 'rvq_kmeans_init', True)
+            and hasattr(semcom_model, 'quantizer_high')
+            and hasattr(semcom_model.quantizer_high, 'num_stages')):
+        import rvq_fix
+        print(f"\n--- RVQFIX: k-means codebook init ({args.rvq_kmeans_images} images, "
+              f"{args.rvq_kmeans_iters} iters, seed {args.rvq_kmeans_seed}) ---")
+        kmeans_loader = torch.utils.data.DataLoader(
+            trainset, batch_size=2, shuffle=False,
+            num_workers=0, drop_last=False, collate_fn=datasets.yolo_collate_fn
+        )
+        rvq_fix.run_kmeans_init(
+            semcom_model, kmeans_loader, device,
+            max_images=args.rvq_kmeans_images,
+            iters=args.rvq_kmeans_iters,
+            seed=args.rvq_kmeans_seed
+        )
+        print("--- RVQFIX: k-means init done ---\n")
+
+    if not args.eval:
+        # --- Training Loop ---
+        print(f"Start training SemCom with FIM for image reconstruction for {args.epochs} epochs")
+        max_psnr_eval = 0.0; best_map_50_eval = 0.0
+        start_time_total_train = time.time()
+
+        for epoch in range(args.start_epoch, args.epochs):
+            epoch_start_time = time.time()
+            print(f"\n--- Starting Training Epoch {epoch}/{args.epochs-1} ---")
+        
+
+            semcom_model.train()
+            _reapply_codebook_freeze_eval()
+            train_stats = engine1.train_epoch_semcom_reconstruction(
+                model=semcom_model, base_reconstruction_criterion=base_reconstruction_criterion,
+                fim_criterion=fim_criterion, lpips_criterion=lpips_criterion_instance,
+                data_loader=trainloader, optimizer=optimizer, device=device, epoch=epoch,
+                loss_scaler=loss_scaler, args=args, max_norm=args.clip_grad,
+                start_steps=epoch * num_training_steps_per_epoch,
+                lr_schedule_values=lr_schedule_values, wd_schedule_values=wd_schedule_values,
+                update_freq=args.update_freq, print_freq=args.save_freq, # Adjusted print_freq to save_freq
+                teacher_model=teacher_model,
+                distill_weight_feat=getattr(args, 'distill_weight_feat', 0.0),
+                distill_weight_cos=getattr(args, 'distill_weight_cos', 0.0),
+                distill_weight_quant=getattr(args, 'distill_weight_quant', 0.0),
+                distill_weight_fim=getattr(args, 'distill_weight_fim', 0.0),
+                distill_task_weight=getattr(args, 'distill_task_weight', 1.0),
+            )
+            epoch_duration = time.time() - epoch_start_time
+            print(f"--- Epoch {epoch} Training Finished in {epoch_duration:.2f}s ---")
+            print_train_stat_str = f"  Avg Train TotalL: {train_stats.get('total_loss',0):.3f} (" \
+                                f"Rec: {train_stats.get('rec_loss',0):.3f}, " \
+                                f"VQ: {train_stats.get('vq_loss',0):.3f}, " \
+                                f"FIM: {train_stats.get('fim_loss',0):.3f}"
+            if lpips_criterion_instance and args.lpips_loss_weight > 0: # Check if LPIPS was active
+                print_train_stat_str += f", LPIPS: {train_stats.get('lpips_loss',0):.3f}"
+            print_train_stat_str += f") PSNR: {train_stats.get('psnr',0):.2f}, SSIM: {train_stats.get('ssim',0):.3f}"
+            print(print_train_stat_str)
+
+            eval_stats_exist_this_epoch = False # Flag to check if eval_stats were computed
+            current_eval_stats = {}
+
+            # Perform evaluation periodically
+            if dataloader_val is not None and ((epoch + 1) % args.save_freq == 0 or epoch + 1 == args.epochs):
+                print(f"\n--- Evaluating at end of Epoch {epoch} (Eval SNR: {args.snr_db_eval} dB) ---")
+                current_epoch_viz_dir_path = Path(args.eval_viz_output_dir) / f"epoch_{epoch}_snr{args.snr_db_eval:.0f}"
+                current_epoch_viz_dir_path.mkdir(parents=True, exist_ok=True)
+                
+                current_eval_stats = engine1.evaluate_semcom_with_yolo( # Store eval_stats
+                    semcom_net=semcom_model, yolo_model=yolo_model, dataloader=dataloader_val,
+                    device=device, reconstruction_criterion=base_reconstruction_criterion,
+                    fim_criterion=fim_criterion, lpips_criterion=lpips_criterion_instance, args=args,
+                    current_epoch_num=epoch, viz_output_dir=str(current_epoch_viz_dir_path)
+                )
+                eval_stats_exist_this_epoch = True # Mark that eval_stats are available
+                
+                current_psnr_value = current_eval_stats.get('psnr', -float('inf')) # Use -inf for correct comparison
+                current_map_50_value = current_eval_stats.get('map_50', -float('inf')) # Use -inf
+
+                print_eval_stat_str = f"  Epoch {epoch} Eval: PSNR: {current_psnr_value:.2f}, SSIM: {current_eval_stats.get('ssim',0.0):.4f}"
+                if lpips_criterion_instance and hasattr(args, 'lpips_loss_weight') and args.lpips_loss_weight > 0:
+                    print_eval_stat_str += f", LPIPS: {current_eval_stats.get('lpips_loss',0.0):.4f}"
+                if yolo_model and engine1.TORCHMETRICS_AVAILABLE:
+                    print_eval_stat_str += f", mAP: {current_eval_stats.get('map',0.0):.4f}, mAP@50: {current_map_50_value:.4f}"
+                print(print_eval_stat_str)
+
+                if current_psnr_value > max_psnr_eval:
+                    max_psnr_eval = current_psnr_value
+                    print(f"  *** New best PSNR on eval: {max_psnr_eval:.2f} at epoch {epoch} ***")
+                    if args.output_dir and args.save_ckpt:
+                        utils.save_model(args=args, model=semcom_model, model_without_ddp=model_without_ddp,
+                                optimizer=optimizer, loss_scaler=loss_scaler, epoch="best_psnr")
+                
+                if yolo_model and engine1.TORCHMETRICS_AVAILABLE and current_map_50_value > best_map_50_eval:
+                    best_map_50_eval = current_map_50_value
+                    print(f"  *** New best mAP@50 on eval: {best_map_50_eval:.4f} at epoch {epoch} ***")
+                    if args.output_dir and args.save_ckpt:
+                        utils.save_model(args=args, model=semcom_model, model_without_ddp=model_without_ddp,
+                                    optimizer=optimizer, loss_scaler=loss_scaler, epoch="best_map")
+                print("-------------------------------------------------------------------\n")
+                sys.stdout.flush()
+
+            # Save regular checkpoint (after potential best model saves)
+            if args.output_dir and args.save_ckpt and ((epoch + 1) % args.save_freq == 0 or epoch + 1 == args.epochs):
+                utils.save_model( # This call was correctly here for numbered checkpoints
+                    args=args, model=semcom_model, model_without_ddp=model_without_ddp,
+                    optimizer=optimizer, loss_scaler=loss_scaler, epoch=epoch
+                )
+
+
+        total_training_duration = time.time() - start_time_total_train
+        total_time_str = str(datetime.timedelta(seconds=int(total_training_duration)))
+        print(f'Total Training time for SemCom: {total_time_str}')
+        print(f'Best PSNR achieved on validation: {max_psnr_eval:.2f} dB')
+        print(f'Best mAP@50 achieved on validation: {best_map_50_eval:.4f}')
+        sys.stdout.flush()
+
+if __name__ == '__main__':
+    try:
+        mp.set_start_method('spawn', force=True)
+        print("INFO: Multiprocessing start method set to 'spawn'.")
+    except RuntimeError:
+        print("INFO: Multiprocessing start method already set.")
+        pass
+    opts = get_args()
+    if not hasattr(opts, 'lpips_loss_weight'):
+        print("Warning: --lpips_loss_weight not defined in args. Defaulting to 0.0 (LPIPS disabled).")
+        opts.lpips_loss_weight = 0.0
+    if not hasattr(opts, 'save_ckpt'): # Ensure save_ckpt exists, default to False if not set by argparse
+        print("Warning: --save_ckpt not explicitly defined in args. Defaulting to False (no checkpoints). Add --save_ckpt to command or base_args.py to enable.")
+        opts.save_ckpt = False
+
+
+    if opts.output_dir: Path(opts.output_dir).mkdir(parents=True, exist_ok=True)
+    if hasattr(opts, 'eval_viz_output_dir') and opts.eval_viz_output_dir :
+        Path(opts.eval_viz_output_dir).mkdir(parents=True, exist_ok=True)
+    
+    main(opts)
+    print("--- Script execution finished. ---")

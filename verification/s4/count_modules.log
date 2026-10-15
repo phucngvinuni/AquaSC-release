@@ -1,0 +1,66 @@
+
+===== flagship (ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL) =====
+img_encoder                params= 25,318,912 (101.276 MB)  buffers=  401,408 (  1.606 MB)
+fim_module                 params=  1,219,073 (  4.876 MB)  buffers=        0 (  0.000 MB)
+encoder_to_channel_proj    params=    262,656 (  1.051 MB)  buffers=        0 (  0.000 MB)
+norm_before_quantizer      params=      1,024 (  0.004 MB)  buffers=        0 (  0.000 MB)
+quantizer_high             params=     98,304 (  0.393 MB)  buffers=  196,992 (  0.788 MB)
+    PARAM  codebooks.0.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.1.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.2.weight             (64, 512) torch.float32 requires_grad=False
+    BUFFER usage_counts                   (3, 64) torch.float32
+    BUFFER last_assigned                  (3, 64, 512) torch.float32
+    BUFFER kmeans_pool                    (0, 512) torch.float32
+    BUFFER ema_cluster_size               (3, 64) torch.float32
+    BUFFER ema_sum                        (3, 64, 512) torch.float32
+quantizer_low              params=      2,048 (  0.008 MB)  buffers=        4 (  0.000 MB)
+    PARAM  embedding.weight               (4, 512) torch.float32 requires_grad=True
+    BUFFER usage_counts                   (4,) torch.float32
+TRANSMITTER total params=26,902,017 (26.902 M)  buffers=598,404; bytes params=107.608 MB = 102.623 MiB; +buffers=110.002 MB
+(excluded: img_decoder=21,544,579; whole-model params=48,709,252)
+img_encoder top-level children: {'patch_embed': 98816, 'blocks': 25219072, 'norm': 1024} | own params: []
+state_dict keys under quantizers: ['quantizer_high.ema_cluster_size', 'quantizer_high.ema_sum', 'quantizer_high.codebooks.0.weight', 'quantizer_high.codebooks.1.weight', 'quantizer_high.codebooks.2.weight', 'quantizer_low.embedding.weight']
+
+===== small512d2L (ckpt_polish_512d2L_from_tx_distill) =====
+img_encoder                params=  6,404,608 ( 25.618 MB)  buffers=  401,408 (  1.606 MB)
+fim_module                 params=  1,219,073 (  4.876 MB)  buffers=        0 (  0.000 MB)
+encoder_to_channel_proj    params=    262,656 (  1.051 MB)  buffers=        0 (  0.000 MB)
+norm_before_quantizer      params=      1,024 (  0.004 MB)  buffers=        0 (  0.000 MB)
+quantizer_high             params=     98,304 (  0.393 MB)  buffers=  196,992 (  0.788 MB)
+    PARAM  codebooks.0.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.1.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.2.weight             (64, 512) torch.float32 requires_grad=False
+    BUFFER usage_counts                   (3, 64) torch.float32
+    BUFFER last_assigned                  (3, 64, 512) torch.float32
+    BUFFER kmeans_pool                    (0, 512) torch.float32
+    BUFFER ema_cluster_size               (3, 64) torch.float32
+    BUFFER ema_sum                        (3, 64, 512) torch.float32
+quantizer_low              params=      2,048 (  0.008 MB)  buffers=        4 (  0.000 MB)
+    PARAM  embedding.weight               (4, 512) torch.float32 requires_grad=True
+    BUFFER usage_counts                   (4,) torch.float32
+TRANSMITTER total params=7,987,713 (7.988 M)  buffers=598,404; bytes params=31.951 MB = 30.471 MiB; +buffers=34.344 MB
+(excluded: img_decoder=21,544,579; whole-model params=29,794,948)
+img_encoder top-level children: {'patch_embed': 98816, 'blocks': 6304768, 'norm': 1024} | own params: []
+state_dict keys under quantizers: ['quantizer_high.ema_cluster_size', 'quantizer_high.ema_sum', 'quantizer_high.codebooks.0.weight', 'quantizer_high.codebooks.1.weight', 'quantizer_high.codebooks.2.weight', 'quantizer_low.embedding.weight']
+
+===== tiny192d2L (ckpt_polish_192d2L_from_tx_distill) =====
+img_encoder                params=    927,168 (  3.709 MB)  buffers=  150,528 (  0.602 MB)
+fim_module                 params=  1,137,153 (  4.549 MB)  buffers=        0 (  0.000 MB)
+encoder_to_channel_proj    params=     98,816 (  0.395 MB)  buffers=        0 (  0.000 MB)
+norm_before_quantizer      params=      1,024 (  0.004 MB)  buffers=        0 (  0.000 MB)
+quantizer_high             params=     98,304 (  0.393 MB)  buffers=  196,992 (  0.788 MB)
+    PARAM  codebooks.0.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.1.weight             (64, 512) torch.float32 requires_grad=False
+    PARAM  codebooks.2.weight             (64, 512) torch.float32 requires_grad=False
+    BUFFER usage_counts                   (3, 64) torch.float32
+    BUFFER last_assigned                  (3, 64, 512) torch.float32
+    BUFFER kmeans_pool                    (0, 512) torch.float32
+    BUFFER ema_cluster_size               (3, 64) torch.float32
+    BUFFER ema_sum                        (3, 64, 512) torch.float32
+quantizer_low              params=      2,048 (  0.008 MB)  buffers=        4 (  0.000 MB)
+    PARAM  embedding.weight               (4, 512) torch.float32 requires_grad=True
+    BUFFER usage_counts                   (4,) torch.float32
+TRANSMITTER total params=2,264,513 (2.265 M)  buffers=347,524; bytes params=9.058 MB = 8.638 MiB; +buffers=10.448 MB
+(excluded: img_decoder=21,544,579; whole-model params=24,071,748)
+img_encoder top-level children: {'patch_embed': 37056, 'blocks': 889728, 'norm': 384} | own params: []
+state_dict keys under quantizers: ['quantizer_high.ema_cluster_size', 'quantizer_high.ema_sum', 'quantizer_high.codebooks.0.weight', 'quantizer_high.codebooks.1.weight', 'quantizer_high.codebooks.2.weight', 'quantizer_low.embedding.weight']

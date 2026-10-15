@@ -1,0 +1,19 @@
+{
+  "split": "valid",
+  "site": "a",
+  "checkpoint": "__AQUASC_ROOT__/ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-best_psnr.pth",
+  "checkpoint_sha256": "b1d2eb25419af6ed6703a4aa886eb7143a8f1f350bd50e3371dacb3cde9e2894",
+  "encoder_embed_dim": 512,
+  "encoder_depth": 8,
+  "encoder_num_heads": 8,
+  "rvq_stages": 3,
+  "rvq_bits_per_stage": 6,
+  "bits_vq_low": 2,
+  "routing_topk": 70,
+  "disable_fim": false,
+  "router": "fim",
+  "router_seed": 42,
+  "n": 437,
+  "decoder_parity_max_abs_error": 1.1920928955078125e-07,
+  "contents": "source encoder output only; not channel evaluation"
+}

@@ -1,0 +1,32 @@
+# tiny_stage2_polish_192d2L: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: tiny_stage2_polish_192d2L
+role: "AquaSC-Tiny (192d2L), stage 2: polish from the distilled transmitter"
+checkpoint_file: checkpoint-best_psnr.pth
+checkpoint_dir: ckpt_polish_192d2L_from_tx_distill
+checkpoint_sha256: 7463c2874ec62415d871df9987cda1372bdf5f30c3d0bf9e636bfc02d3f28cad
+checkpoint_epoch_tag: "best_psnr"
+flags:
+  batch_size: 4
+  bits_vq_low: 2
+  data_path: "__AQUASC_DATA__/yolo_fish_dataset_root/"
+  encoder_depth: 2
+  encoder_embed_dim: 192
+  epochs: 30
+  finetune_reset: true
+  lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_polish_192d2L_from_tx_distill"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_distill_tx_only_192d2L/checkpoint-149.pth"
+  rvq_kmeans_init: false
+  save_ckpt: true
+  save_freq: 5
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  warmup_epochs: 3
+  yolo_weights: ""
+command: >
+  python run_class_main.py --data_path __AQUASC_DATA__/yolo_fish_dataset_root/ --no_augment --output_dir ckpt_polish_192d2L_from_tx_distill --batch_size 4 --epochs 30 --lr 1e-05 --warmup_epochs 3 --save_ckpt --encoder_embed_dim 192 --encoder_depth 2 --bits_vq_low 2 --quantizer_type rvq --no-rvq_kmeans_init --outside_box_loss_weight 0.1 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --finetune_reset --yolo_weights '' --save_freq 5 --resume ckpt_distill_tx_only_192d2L/checkpoint-149.pth

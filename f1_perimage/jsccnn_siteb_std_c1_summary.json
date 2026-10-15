@@ -1,0 +1,48 @@
+{
+  "provenance": {
+    "site": "B",
+    "variant": "std",
+    "c": 1,
+    "checkpoint": "__AQUASC_ROOT__/competitors/jscc/output_jscc_baselinea/std_c1_snr10_ratio0.0417/checkpoints/best_psnr.pkl",
+    "uses_per_px": 0.0625,
+    "per_image_ceiling": 0.6451,
+    "pooled_ceiling": 0.6044,
+    "conf_thres": 0.001,
+    "channel_replay_method": "direct encoder()/decoder() calls + a standalone reimplementation of channel.py's Rayleigh math (h, AWGN from the seeded bank instead of internal torch.randn) -- model.forward()/channel_layer are not used for this measurement."
+  },
+  "by_snr": {
+    "0": {
+      "mean_per_image_ap50": 2.973923801619094e-05,
+      "ci_low": 0.0,
+      "ci_high": 6.890799184995038e-05,
+      "retention_per_image": 4.610019844394813e-05,
+      "pooled_map50": 1.9044408691115678e-05,
+      "retention_pooled": 3.150961067358649e-05,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_siteb_std_c1_snr0.npy"
+    },
+    "10": {
+      "mean_per_image_ap50": 5.440104359877296e-06,
+      "ci_low": 0.0,
+      "ci_high": 1.6320313091625223e-05,
+      "retention_per_image": 8.43296288928429e-06,
+      "pooled_map50": 1.5326610082411208e-06,
+      "retention_pooled": 2.535838862079948e-06,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_siteb_std_c1_snr10.npy"
+    },
+    "20": {
+      "mean_per_image_ap50": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "retention_per_image": 0.0,
+      "pooled_map50": 0.0,
+      "retention_pooled": 0.0,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_siteb_std_c1_snr20.npy"
+    }
+  }
+}

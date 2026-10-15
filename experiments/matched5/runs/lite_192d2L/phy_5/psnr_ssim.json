@@ -1,0 +1,32 @@
+{
+  "receiver_file": "__AQUASC_ROOT__/experiments/matched5/runs/lite_192d2L/phy_5/receiver.npz",
+  "psnr_mean": 39.44754638627723,
+  "ssim_mean": 0.9701277758650205,
+  "psnr_mean_per_m": [
+    39.26085420008059,
+    39.332952684826324,
+    39.271086074687815,
+    39.672305292553375,
+    39.27094367256871,
+    39.412430551317,
+    39.58113382480763,
+    39.52106761049341,
+    39.337123446994354,
+    39.81556650444313
+  ],
+  "ssim_mean_per_m": [
+    0.9695269617217558,
+    0.9698348968393273,
+    0.9695235213471783,
+    0.9705418109617852,
+    0.9699055873961361,
+    0.9700827032879547,
+    0.970259457550667,
+    0.9702272402743498,
+    0.9701902582137673,
+    0.9711853210572843
+  ],
+  "n_images": 432,
+  "M": 10,
+  "note": "Computed from the existing receiver.npz (no new channel simulation) via decode_frame(), scored with utils.calc_psnr/calc_ssim -- the same convention every other system in RESULTS_SUMMARY_TABLE.md uses."
+}

@@ -1,0 +1,32 @@
+# siteB_edge_512d2L_s4like: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: siteB_edge_512d2L_s4like
+role: "Small student fine-tuned on Site B (edge benchmark model)"
+checkpoint_file: checkpoint-best_map.pth
+checkpoint_dir: ckpt_512d2L_siteb_s4like
+checkpoint_sha256: 4bd79bff108613680b84d48501d85c9a19dc342c03915f2c399946cf3db88cd1
+checkpoint_epoch_tag: "best_map"
+flags:
+  batch_size: 4
+  bits_vq_low: 2
+  data_path: "__AQUASC_DATA__/yolo_fishdet_nb2_vd/"
+  encoder_depth: 2
+  epochs: 30
+  finetune_reset: true
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_512d2L_siteb_s4like"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  resume: "ckpt_polish_512d2L_from_tx_distill/checkpoint-14.pth"
+  rvq_ema_decay: 0.9
+  rvq_kmeans_init: false
+  save_ckpt: true
+  save_freq: 5
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  warmup_epochs: 3
+  yolo_weights: "best_siteB.pt"
+command: >
+  python run_class_main.py --data_path __AQUASC_DATA__/yolo_fishdet_nb2_vd/ --no_augment --output_dir ckpt_512d2L_siteb_s4like --batch_size 4 --epochs 30 --min_lr 1e-05 --warmup_epochs 3 --save_ckpt --encoder_depth 2 --bits_vq_low 2 --quantizer_type rvq --no-rvq_kmeans_init --rvq_ema_decay 0.9 --outside_box_loss_weight 0.1 --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --finetune_reset --yolo_weights best_siteB.pt --save_freq 5 --resume ckpt_polish_512d2L_from_tx_distill/checkpoint-14.pth

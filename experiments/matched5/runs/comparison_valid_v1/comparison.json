@@ -1,0 +1,47 @@
+{
+  "split": "valid",
+  "snr_db": 5.0,
+  "symbols_per_image": 6144,
+  "channel_uses_per_px": 0.12244897959183673,
+  "n": 437,
+  "M": 3,
+  "aquasc_mean_per_image_ap50": 0.3604680895805359,
+  "roijscc_mean_per_image_ap50": 0.24355055391788483,
+  "aquasc_pooled_map50": 0.2672458092371623,
+  "roijscc_pooled_map50": 0.1615526576836904,
+  "pooled_difference": 0.10569315155347189,
+  "paired_per_image_bootstrap": {
+    "mean_diff": 0.11691753306448485,
+    "mean_a": 0.36046809311188943,
+    "mean_b": 0.2435505600474046,
+    "ci_low": 0.09848124452091267,
+    "ci_high": 0.1359286716543788,
+    "n_boot": 10000,
+    "p_value": 0.0,
+    "alpha": 0.05,
+    "seed": 42
+  },
+  "wilcoxon": {
+    "n": 437,
+    "n_nonzero": 407,
+    "n_zero": 30,
+    "statistic": 15184.5,
+    "p_value": 1.4390823563456637e-28,
+    "alternative": "two-sided"
+  },
+  "per_realization_mean_ap_differences": [
+    0.11305756121873856,
+    0.117179736495018,
+    0.12051521986722946
+  ],
+  "meets_preregistered_win": true,
+  "aquasc_metrics_sha256": "bd8f88cf3f47f6aec00caff9524bc8182adc0c32a3dc5571a9d56a04efbf622f",
+  "roi_metrics_sha256": "26cb2c7657e09cb4eb538192fe40331b9568f102cc6c79df063b4055aa83554a",
+  "limitations": [
+    "one training seed per model",
+    "Site A only",
+    "AquaSC 300 training epochs versus ROI-JSCC 100",
+    "ROI-JSCC granted its original ground-truth ROI protocol",
+    "CI resamples images, not independent videos or training seeds"
+  ]
+}

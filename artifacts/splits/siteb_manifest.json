@@ -1,0 +1,96 @@
+{
+ "dataset": "FishDet-NB2 (Site B)",
+ "seed": 42,
+ "videos": {
+  "20260528_05h": {
+   "split": "train",
+   "frames": 268
+  },
+  "20260528_10h": {
+   "split": "train",
+   "frames": 217
+  },
+  "20260528_16h": {
+   "split": "train",
+   "frames": 240
+  },
+  "20260529_05h": {
+   "split": "train",
+   "frames": 271
+  },
+  "20260529_10h": {
+   "split": "train",
+   "frames": 220
+  },
+  "20260529_16h": {
+   "split": "train",
+   "frames": 233
+  },
+  "20260530_05h": {
+   "split": "train",
+   "frames": 250
+  },
+  "20260530_10h": {
+   "split": "train",
+   "frames": 265
+  },
+  "20260530_16h": {
+   "split": "train",
+   "frames": 246
+  },
+  "20260531_05h": {
+   "split": "train",
+   "frames": 254
+  },
+  "20260531_10h": {
+   "split": "train",
+   "frames": 256
+  },
+  "20260531_16h": {
+   "split": "train",
+   "frames": 220
+  },
+  "20260601_05h": {
+   "split": "train",
+   "frames": 164
+  },
+  "20260601_10h": {
+   "split": "train",
+   "frames": 268
+  },
+  "20260601_16h": {
+   "split": "train",
+   "frames": 243
+  },
+  "20260602_05h": {
+   "split": "train",
+   "frames": 211
+  },
+  "20260602_10h": {
+   "split": "train",
+   "frames": 230
+  },
+  "20260602_16h": {
+   "split": "valid",
+   "frames": 239
+  },
+  "20260603_05h": {
+   "split": "valid",
+   "frames": 248
+  },
+  "20260603_10h": {
+   "split": "test",
+   "frames": 210
+  },
+  "20260603_16h": {
+   "split": "test",
+   "frames": 245
+  }
+ },
+ "split_counts": {
+  "train": 4056,
+  "valid": 487,
+  "test": 455
+ },
+ "note": "video-disjoint at YYYYMMDD_HH granularity; replaces the shipped video-intersecting split"
+}

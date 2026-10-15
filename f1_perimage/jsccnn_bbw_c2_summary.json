@@ -1,0 +1,81 @@
+{
+  "provenance": {
+    "site": "A",
+    "variant": "bbw",
+    "c": 2,
+    "checkpoint": "__AQUASC_ROOT__/competitors/jscc/output_jscc_baselinea/bbw_c2_snr10_ratio0.0833/checkpoints/best_psnr.pkl",
+    "uses_per_px": 0.125,
+    "per_image_ceiling": 0.7743,
+    "pooled_ceiling": 0.7292211,
+    "conf_thres": 0.001,
+    "channel_replay_method": "direct encoder()/decoder() calls + a standalone reimplementation of channel.py's Rayleigh math (h, AWGN from the seeded bank instead of internal torch.randn) -- model.forward()/channel_layer are not used for this measurement."
+  },
+  "by_snr": {
+    "-5": {
+      "mean_per_image_ap50": 0.30560755729675293,
+      "ci_low": 0.2909839271108568,
+      "ci_high": 0.32073517222996556,
+      "retention_per_image": 0.3946888251281841,
+      "pooled_map50": 0.2027286946773529,
+      "retention_pooled": 0.27800717049651047,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snrm5.npy"
+    },
+    "0": {
+      "mean_per_image_ap50": 0.39788421988487244,
+      "ci_low": 0.3812457348909919,
+      "ci_high": 0.4152994996972632,
+      "retention_per_image": 0.5138631278378826,
+      "pooled_map50": 0.31270157396793363,
+      "retention_pooled": 0.4288158611536798,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snr0.npy"
+    },
+    "5": {
+      "mean_per_image_ap50": 0.4533061385154724,
+      "ci_low": 0.4349083016403003,
+      "ci_high": 0.47263292695649767,
+      "retention_per_image": 0.5854399309253163,
+      "pooled_map50": 0.38083029687404635,
+      "retention_pooled": 0.5222425638452403,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snr5.npy"
+    },
+    "10": {
+      "mean_per_image_ap50": 0.48238468170166016,
+      "ci_low": 0.46283433003980595,
+      "ci_high": 0.5024674967487549,
+      "retention_per_image": 0.6229945521137288,
+      "pooled_map50": 0.41183130741119384,
+      "retention_pooled": 0.5647550618203366,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snr10.npy"
+    },
+    "15": {
+      "mean_per_image_ap50": 0.4957287013530731,
+      "ci_low": 0.4759991393071013,
+      "ci_high": 0.5161675429907283,
+      "retention_per_image": 0.6402282078691375,
+      "pooled_map50": 0.42960502207279205,
+      "retention_pooled": 0.5891286224065542,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snr15.npy"
+    },
+    "20": {
+      "mean_per_image_ap50": 0.5021482110023499,
+      "ci_low": 0.48198858184052235,
+      "ci_high": 0.522975557696514,
+      "retention_per_image": 0.6485189345245381,
+      "pooled_map50": 0.4360980957746506,
+      "retention_pooled": 0.5980327444922405,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/jsccnn_bbw_c2_snr20.npy"
+    }
+  }
+}

@@ -1,0 +1,326 @@
+{
+ "note": "SHA-256 of every checkpoint used in the manuscript. Weights are hosted separately (see docs/CHECKPOINTS.md); verify downloads with scripts/attach_checkpoints.sh. `epoch_tag` is the epoch stored in the file ('best_psnr' / 'best_map' = best-metric snapshot).",
+ "checkpoints": [
+  {
+   "key": "flagship_r122_best_psnr",
+   "file": "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-best_psnr.pth",
+   "bytes": 584412414,
+   "sha256": "b1d2eb25419af6ed6703a4aa886eb7143a8f1f350bd50e3371dacb3cde9e2894",
+   "epoch_tag": "best_psnr",
+   "role": "AquaSC headline codec (K=63, RVQ 3x6 high / 2-bit low); JointFrame 6144 symbols = 0.122449 uses/px",
+   "used_for": "Fig. rate/SNR headline; 3 rates (high)",
+   "config": "configs/generated/flagship_r122_best_psnr.yaml; configs/final_18_2.yaml",
+   "results": "experiments/matched5/runs/sweep",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "codec_r061_best_map",
+   "file": "ckpt_codec_r061_topk32_3x4_low1/checkpoint-best_map.pth",
+   "bytes": 583809714,
+   "sha256": "9e8f597aa9b30219be165e7afcd8d54fcdfddd9f493b9f475b317d419674bfd5",
+   "epoch_tag": "best_map",
+   "role": "AquaSC retrained codec at 0.061224 uses/px (K=32, RVQ 3x4 / 1-bit low, 1510 info bits, 3072 symbols)",
+   "used_for": "3 rates (mid)",
+   "config": "configs/generated/codec_r061_best_map.yaml",
+   "results": "experiments/matched5/runs/jointframe_r061_bestmap",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "codec_r030_best_map",
+   "file": "ckpt_codec_r030_topk24_3x6_low0/checkpoint-best_map.pth",
+   "bytes": 584393970,
+   "sha256": "3ce5a165bafa86ddaf50ff270dce27e88514e512c1e0233b49746dc28d6e2e68",
+   "epoch_tag": "best_map",
+   "role": "AquaSC retrained codec at 0.030612 uses/px (K=24, RVQ 3x6 / 0-bit low, 768 info bits, 1536 symbols)",
+   "used_for": "3 rates (low)",
+   "config": "configs/generated/codec_r030_best_map.yaml",
+   "results": "experiments/matched5/runs/jointframe_r030_bestmap",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "ablation_BASE",
+   "file": "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_BASE/checkpoint-best_psnr.pth",
+   "bytes": 574629278,
+   "sha256": "d6bc5b88138d55ab7b24c087bc474ffa347fffbbe1365f38ab4e3658a115931a",
+   "epoch_tag": "best_psnr",
+   "role": "Ablation: no FIM, no bit-budget weighting (Base)",
+   "used_for": "4 ablations",
+   "config": "configs/generated/ablation_BASE.yaml",
+   "results": "experiments/matched5/runs/ablation_routing_coded",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "ablation_BB_NOFIM_V2",
+   "file": "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_BB_NOFIM_V2/checkpoint-best_psnr.pth",
+   "bytes": 574631710,
+   "sha256": "682716323b4ae13c6d2588a8f38a695cbbafde3d3cd62f0a09c1766d1aaa8e16",
+   "epoch_tag": "best_psnr",
+   "role": "Ablation: bit-budget weighting without FIM (BB-NoFIM, v2)",
+   "used_for": "4 ablations",
+   "config": "configs/generated/ablation_BB_NOFIM_V2.yaml",
+   "results": "experiments/matched5/runs/ablation_routing_coded",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "ablation_FIM_NOBB",
+   "file": "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_FIM_NOBB/checkpoint-best_psnr.pth",
+   "bytes": 584412670,
+   "sha256": "244f846815f99ebce2e82798e99f34b20b650c2c5dff2b27e07428845417edfb",
+   "epoch_tag": "best_psnr",
+   "role": "Ablation: FIM without bit-budget weighting (FIM-NoBB)",
+   "used_for": "4 ablations",
+   "config": "configs/generated/ablation_FIM_NOBB.yaml",
+   "results": "experiments/matched5/runs/ablation_routing_coded",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "tiny_stage1_distill_192d2L",
+   "file": "ckpt_distill_tx_only_192d2L/checkpoint-149.pth",
+   "bytes": 96746941,
+   "sha256": "b821c6278caa8cafd186bf5f36b24b948f6f222a3aa032ae88e2e8033bd4dc6a",
+   "epoch_tag": "149",
+   "role": "AquaSC-Tiny (192d2L, 0.93M encoder), stage 1: transmitter-only distillation",
+   "used_for": "Small/Tiny",
+   "config": "configs/generated/tiny_stage1_distill_192d2L.yaml (flags not stored)",
+   "results": "experiments/matched5/runs/lite_192d2L",
+   "contents": [
+    "epoch",
+    "model"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "tiny_stage2_polish_192d2L",
+   "file": "ckpt_polish_192d2L_from_tx_distill/checkpoint-best_psnr.pth",
+   "bytes": 288668638,
+   "sha256": "7463c2874ec62415d871df9987cda1372bdf5f30c3d0bf9e636bfc02d3f28cad",
+   "epoch_tag": "best_psnr",
+   "role": "AquaSC-Tiny (192d2L), stage 2: polish from the distilled transmitter",
+   "used_for": "Small/Tiny",
+   "config": "configs/generated/tiny_stage2_polish_192d2L.yaml",
+   "results": "experiments/matched5/runs/lite_192d2L",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "small_stage1_distill_512d2L",
+   "file": "ckpt_distill_tx_only_v2_512d2L/checkpoint-69.pth",
+   "bytes": 119639638,
+   "sha256": "0de2ea216f900069a0889d662b0fb1f73abe1f60ba2588e5cc1361f31085ed6f",
+   "epoch_tag": "69",
+   "role": "AquaSC-Small (512d2L, 6.4M encoder), stage 1: transmitter-only distillation",
+   "used_for": "Small/Tiny",
+   "config": "configs/generated/small_stage1_distill_512d2L.yaml (flags not stored)",
+   "results": "experiments/matched5/runs/lite_512d2L",
+   "contents": [
+    "epoch",
+    "model"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "small_stage2_polish_512d2L",
+   "file": "ckpt_polish_512d2L_from_tx_distill/checkpoint-best_psnr.pth",
+   "bytes": 357347230,
+   "sha256": "5efec488ad7404221a380dc5f0f0310fe40d0cf4fdc229cc09aa27dc2b256524",
+   "epoch_tag": "best_psnr",
+   "role": "AquaSC-Small (512d2L), stage 2: polish from the distilled transmitter",
+   "used_for": "Small/Tiny",
+   "config": "configs/generated/small_stage2_polish_512d2L.yaml",
+   "results": "experiments/matched5/runs/lite_512d2L",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_S3_full_finetune_ep29",
+   "file": "ckpt_siteb_s3_full_finetune/checkpoint-29.pth",
+   "bytes": 584404010,
+   "sha256": "2445f498faede7d9f6b7d326b752e343fdfc25c3b97e79a5369cda64cbad9167",
+   "epoch_tag": "29",
+   "role": "Site B adaptation S-3: full fine-tune of the flagship, epoch 29",
+   "used_for": "Site B adaptation",
+   "config": "configs/generated/siteB_S3_full_finetune_ep29.yaml",
+   "results": "experiments/matched5/runs/sweep_siteb",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_S4_ema0p9_ep4",
+   "file": "ckpt_siteb_s4_ema0p9/checkpoint-4.pth",
+   "bytes": 584403038,
+   "sha256": "05ecea27c1abb7587efabf76d0f45ea544b275d9875bf412c88944a9dec7fc85",
+   "epoch_tag": "4",
+   "role": "Site B adaptation S-4 (RVQ EMA decay 0.9), epoch 4",
+   "used_for": "Site B adaptation",
+   "config": "configs/generated/siteB_S4_ema0p9_ep4.yaml",
+   "results": "experiments/matched5/runs/sweep_siteb",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_S4_ema0p9_ep9",
+   "file": "ckpt_siteb_s4_ema0p9/checkpoint-9.pth",
+   "bytes": 584403038,
+   "sha256": "8b685f52b8d8e7fb5a165f426f2d54740e9d003985ae7bd38211dc2677a1882c",
+   "epoch_tag": "9",
+   "role": "Site B adaptation S-4 (RVQ EMA decay 0.9), epoch 9",
+   "used_for": "Site B adaptation",
+   "config": "configs/generated/siteB_S4_ema0p9_ep9.yaml",
+   "results": "experiments/matched5/runs/s4_siteb_honest_select",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_S4_ema0p9_ep14",
+   "file": "ckpt_siteb_s4_ema0p9/checkpoint-14.pth",
+   "bytes": 584403946,
+   "sha256": "40bf47b774e06cce1ed18f1d280c15b1a13b700f79a3e26ec62da7b306f1915e",
+   "epoch_tag": "14",
+   "role": "Site B adaptation S-4 (RVQ EMA decay 0.9), epoch 14",
+   "used_for": "Site B adaptation",
+   "config": "configs/generated/siteB_S4_ema0p9_ep14.yaml",
+   "results": "experiments/matched5/runs/s4_siteb_honest_select",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_edge_192d2L_s4like",
+   "file": "ckpt_192d2L_siteb_s4like/checkpoint-best_map.pth",
+   "bytes": 288668082,
+   "sha256": "5662df702839888fcf9e6bb31be3b887c10022148b39bdc8c2549b4ed53037d9",
+   "epoch_tag": "best_map",
+   "role": "Tiny student fine-tuned on Site B (edge benchmark model)",
+   "used_for": "edge timing",
+   "config": "configs/generated/siteB_edge_192d2L_s4like.yaml",
+   "results": "experiments/edge_bench",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "key": "siteB_edge_512d2L_s4like",
+   "file": "ckpt_512d2L_siteb_s4like/checkpoint-best_map.pth",
+   "bytes": 357346610,
+   "sha256": "4bd79bff108613680b84d48501d85c9a19dc342c03915f2c399946cf3db88cd1",
+   "epoch_tag": "best_map",
+   "role": "Small student fine-tuned on Site B (edge benchmark model)",
+   "used_for": "edge timing",
+   "config": "configs/generated/siteB_edge_512d2L_s4like.yaml",
+   "results": "experiments/edge_bench",
+   "contents": [
+    "epoch",
+    "model",
+    "optimizer",
+    "scaler"
+   ],
+   "download": "[to be filled in by the authors]"
+  }
+ ],
+ "detectors": [
+  {
+   "file": "best.pt",
+   "bytes": 22472931,
+   "sha256": "bab85794b395ae57e38e428ccf4db0bacecf10578b6c18161de56358189f8e57",
+   "role": "Site A YOLO fish detector (scoring detector for all reported mAP)",
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "file": "best_siteB.pt",
+   "bytes": 22484579,
+   "sha256": "1d85f04db5c4e55efb5d29aabe4fc2a4b085279cc2d051a0479fdae79d802acb",
+   "role": "Site B detector",
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "file": "best_bothsites.pt",
+   "bytes": 22480483,
+   "sha256": "7174e9443e15d42828a919b398772b08b47ddd27a485d18f528460cd3fefbd4d",
+   "role": "detector trained on both sites",
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "file": "best_v1.pt",
+   "bytes": 22496803,
+   "sha256": "4d190a213e2db79521f44c508974ae673959dd45a5321f0b23f16ab5ffbaeb97",
+   "role": "earlier detector (superseded; kept for provenance)",
+   "download": "[to be filled in by the authors]"
+  },
+  {
+   "file": "best.onnx",
+   "bytes": 44598376,
+   "sha256": "a6d666dc0a709f02cd9ed9b14c8b5240ec81b8582454a8d69208f05c5ece177a",
+   "role": "ONNX export of best.pt (edge benchmark)",
+   "download": "[to be filled in by the authors]"
+  }
+ ]
+}

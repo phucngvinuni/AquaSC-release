@@ -1,0 +1,20 @@
+# Reproducibility status: what is verified and what is not
+
+Verified in a fresh clone (CPU, no checkpoint, no dataset): the four unit tests (`test_stats.py`, `test_routing_baselines.py`, `test_bitstream.py`, `test_digital_pipeline.py`), the figure scripts listed as verified in `docs/RESULT_MAP.md`, and the recomputation of paired CIs from the shipped per-image arrays (`verification/s3_s7/s3_recompute.py`).
+
+Verified on the authors' machine with checkpoints and data (the stored `summary.json` / `metrics.npz` files are the outputs): the three AquaSC rates, ablations and routing controls through the coded pipeline, K sweep, Site B, WebP/JPEG matched-budget rerun. Frame-format audit: header, mask, index layout and CRC-32 round trip exactly on all 432 test frames for each of the three operating points, and one-bit corruption of any segment is rejected (`verification/s1/roundtrip_results.json`); LDPC/receiver configuration dump: `verification/s2/`.
+
+Fresh-clone check of the coded command (`bash scripts/eval_coded.sh low OUT 10 1`: low rate, 10 dB, draw 0, with the regenerated Site A channel bank): the cached tokens and routing masks are bit-identical to the stored cache, the decoded tokens, masks and CRC outcomes after the LDPC link are bit-identical to the stored receiver file, and per-image AP50 is identical for 431 of 432 images; one image differs by 0.001 (GPU floating-point non-determinism in the detector). Pooled mAP@0.5 of draw 0 is 0.4158. The regenerated Site A channel bank (`python gen_channel_bank.py`) is bit-identical to the one used for the paper.
+
+## Known gaps (stated so that nobody has to discover them)
+* **Re-running the three coded rate points from the shipped command** (`scripts/eval_coded.sh`) requires the checkpoints, `best.pt` and the dataset, which are hosted separately; their download links are placeholders until the authors fill them in.
+* **Stage-1 distillation flags** (Small and Tiny) are not recoverable: the checkpoints do not store their arguments and no training log survives.
+* **Channel bank**: Site A regeneration is verified bit-identical; Site B regeneration is not.
+* **Figures not reproducible from this repository**: `figure_f7_two_levers` panel (b) (the ten-realisation outputs it needs are not stored), `figure_main_comparison`, `figure_aquasc_variants` (no generating script; they come from the first submission). `figure_f5_rate_pareto` regenerated from the script differs from an older manuscript file in 0.57 % of pixels (one dotted SwinJSCC series): the regenerated figure is current.
+* **Qualitative reconstructions** (`plot_qualitative_recon*.py`) need a checkpoint and a receiver dump; not executed in the fresh-clone check.
+* **Pi network timing** was measured interactively (not scripted) and only for 384 B and 6421 B payloads; no raw log exists for the 232.5 ms entries of the baselines in the split-computing table (the ROI-JSCC Network cell uses the same value).
+* **Confidence intervals** are conditional on the released checkpoint and the test split: per-image mean over 10 channel draws, paired bootstrap over 432 images (10,000 resamples, seed 42, percentile 95 %). They do not capture training-seed or video-level variability; every model has a single training seed. Bootstrap p-values have resolution 1e-4.
+* **Selection caveat**: the Site B epoch-4 checkpoint (S-4) was selected on the Site B test split in the original study; `experiments/matched5/run_s4_siteb_honest_select.sh` re-examines the choice with a held-out selection.
+* **Baseline comparability** (WebP/JPEG): baselines use Gray 16-QAM with rate-1/2 per-block LDPC (k=1024), AquaSC uses Gray QPSK with one codeword per image; source codecs differ. The comparison is between complete transmission configurations at equal channel uses.
+* **Licence of inherited code**: see `NOTICE.md`.
+* **Comments that cite `RESULTS_OF_RECORD.md` / `RESULTS_SUMMARY_TABLE.md`** refer to the authors' internal provenance ledger, which is not part of this release; the numbers it records are available as the shipped result files listed in `docs/RESULT_MAP.md`.

@@ -1,0 +1,57 @@
+{
+  "provenance": {
+    "checkpoint": "competitors/ROI-JSCC/saved_models/ROIIT_FISH_Rayleigh_SNR010_rcpp032_PSNR_ROIJSCC_roi-largest_box_best.pt",
+    "rcpp": 32,
+    "uses_per_px": 0.1875,
+    "site": "B (zero-shot, no retraining -- Site-A-trained checkpoint)",
+    "training_epochs_roijscc": 100,
+    "training_epochs_aquasc": 300,
+    "epoch_budget_note": "ROI-JSCC trained for 100 epochs vs AquaSC's 300 -- this asymmetry must be stated wherever this number is used in a matched-rate comparison (plan v5.9, J1); carried into every cell of this Site B table too.",
+    "channel_bank_sha256_note": "channel_bank_siteb.npz, subseed base 55,000,000 (disjoint from Site A's 42,000,000)",
+    "conf_thres": 0.001,
+    "per_image_ceiling_siteb": 0.6451,
+    "pooled_ceiling_siteb": 0.6044,
+    "note_no_prior_floor_comparison": "Do not divide by AquaSC's prior floor (Site A 0.2711 or Site B 0.0002/0.0012) -- that floor is AquaSC's decoder emitting its learned prior with zero image information; ROI-JSCC (analog JSCC) has no equivalent no-information mode to floor-normalize against. Report raw AP against Site B's own ceiling only."
+  },
+  "by_snr": {
+    "0.0": {
+      "mean_per_image_ap50": 0.0038768297526985407,
+      "ci_low": 0.0032059621758895986,
+      "ci_high": 0.004630272387415831,
+      "retention_per_image_siteb": 0.006009657034100978,
+      "pooled_map50": 0.0022084017167799176,
+      "retention_pooled_siteb": 0.0036538744486762365,
+      "per_image_ceiling_siteb": 0.6451,
+      "pooled_ceiling_siteb": 0.6044,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/roijscc_siteb_rcpp32_snr0.npy"
+    },
+    "10.0": {
+      "mean_per_image_ap50": 0.012702390551567078,
+      "ci_low": 0.010755704072630528,
+      "ci_high": 0.014870446740356922,
+      "retention_per_image_siteb": 0.019690575959645136,
+      "pooled_map50": 0.011911272723227739,
+      "retention_pooled_siteb": 0.019707598814076337,
+      "per_image_ceiling_siteb": 0.6451,
+      "pooled_ceiling_siteb": 0.6044,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/roijscc_siteb_rcpp32_snr10.npy"
+    },
+    "20.0": {
+      "mean_per_image_ap50": 0.01805793307721615,
+      "ci_low": 0.015343088904879992,
+      "ci_high": 0.02107203332637804,
+      "retention_per_image_siteb": 0.02799245555296256,
+      "pooled_map50": 0.013411236833781004,
+      "retention_pooled_siteb": 0.022189339566149907,
+      "per_image_ceiling_siteb": 0.6451,
+      "pooled_ceiling_siteb": 0.6044,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "__AQUASC_ROOT__/f1_perimage/roijscc_siteb_rcpp32_snr20.npy"
+    }
+  }
+}

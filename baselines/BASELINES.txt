@@ -1,0 +1,4 @@
+# name  url  commit   (used by scripts/setup_baselines.sh; our added/modified files are in baselines/overlay/<name>/)
+ROI-JSCC https://github.com/hansung-choi/ROI-JSCC.git 6f947d1
+jscc https://github.com/phucngvinuni/jscc.git ed721bd
+swinnnn https://github.com/phucngvinuni/swinnnn.git 422d094

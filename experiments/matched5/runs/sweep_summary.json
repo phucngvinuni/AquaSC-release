@@ -1,0 +1,47 @@
+{
+  "rate_uses_px": 0.12244897959183673,
+  "rows": [
+    {
+      "snr_db": -5,
+      "aquasc_joint_qpsk": 0.37946343421936035,
+      "roijscc_rcpp32": 0.4900779128074646,
+      "delta": -0.11061447858810425,
+      "aquasc_frame_loss_rate": 0.7805555555555556
+    },
+    {
+      "snr_db": 0,
+      "aquasc_joint_qpsk": 0.5834170579910278,
+      "roijscc_rcpp32": 0.581165075302124,
+      "delta": 0.0022519826889038086,
+      "aquasc_frame_loss_rate": 0.3692129629629629
+    },
+    {
+      "snr_db": 5,
+      "aquasc_joint_qpsk": 0.6956192851066589,
+      "roijscc_rcpp32": 0.6348150968551636,
+      "delta": 0.06080418825149536,
+      "aquasc_frame_loss_rate": null
+    },
+    {
+      "snr_db": 10,
+      "aquasc_joint_qpsk": 0.7398056387901306,
+      "roijscc_rcpp32": 0.6559685468673706,
+      "delta": 0.08383709192276001,
+      "aquasc_frame_loss_rate": 0.05138888888888893
+    },
+    {
+      "snr_db": 15,
+      "aquasc_joint_qpsk": 0.759296715259552,
+      "roijscc_rcpp32": 0.6681799292564392,
+      "delta": 0.09111678600311279,
+      "aquasc_frame_loss_rate": 0.012268518518518512
+    },
+    {
+      "snr_db": 20,
+      "aquasc_joint_qpsk": 0.7624279856681824,
+      "roijscc_rcpp32": 0.6727293729782104,
+      "delta": 0.08969861268997192,
+      "aquasc_frame_loss_rate": 0.0057870370370370905
+    }
+  ]
+}

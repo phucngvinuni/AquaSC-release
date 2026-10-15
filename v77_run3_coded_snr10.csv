@@ -1,0 +1,2 @@
+SNR_dB,PSNR,SSIM,mAP_50,mAP,digital_blocks,digital_failed,digital_bler,digital_ber,digital_bit_accuracy,digital_erased_tokens,digital_erased_token_fraction,digital_iterations_mean
+10.0,33.6672,0.9466,0.5076,0.2074,3024,1002,0.3313,0.0093,0.9907,158986,0.4694,13.56

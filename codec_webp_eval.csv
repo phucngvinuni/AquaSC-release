@@ -1,0 +1,2 @@
+codec,quality,mean_bpp,n_images,n_gt_boxes,map_50_orig,map_50_recon,retention_vs_canonical_07292,map_orig,map_recon,map_50_95_orig,map_50_95_recon,precision_orig,precision_recon,recall_orig,recall_recon,f1_orig,f1_recon,psnr,ssim,in_box_psnr,in_box_ssim
+webp,81.0,0.187971,432.0,2003.0,0.729212,0.616883,0.845972,0.289062,0.184995,,,0.088248,0.074224,0.829256,0.731902,0.15952,0.13478,42.460834,0.973384,36.07759,0.921703

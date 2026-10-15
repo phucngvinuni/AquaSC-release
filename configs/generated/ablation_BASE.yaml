@@ -1,0 +1,25 @@
+# ablation_BASE: flags recovered from the `args` stored inside the released checkpoint (only values that differ from the argparse defaults).
+# They are those of the LAST training session that wrote this checkpoint: resumed runs show `resume` / `start_epoch`.
+name: ablation_BASE
+role: "Ablation: no FIM, no bit-budget weighting (Base)"
+checkpoint_file: checkpoint-best_psnr.pth
+checkpoint_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_BASE
+checkpoint_sha256: d6bc5b88138d55ab7b24c087bc474ffa347fffbbe1365f38ab4e3658a115931a
+checkpoint_epoch_tag: "best_psnr"
+flags:
+  batch_size: 2
+  bits_vq_low: 2
+  disable_bbw: true
+  disable_fim: true
+  min_lr: 1e-05
+  no_augment: true
+  output_dir: "ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_BASE"
+  outside_box_loss_weight: 0.1
+  quantizer_type: "rvq"
+  save_ckpt: true
+  snr_db_eval: 10.0
+  snr_db_train_max: 20.0
+  snr_db_train_min: 0.0
+  yolo_weights: ""
+command: >
+  python run_class_main.py --no_augment --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_ABL_BASE --batch_size 2 --min_lr 1e-05 --save_ckpt --bits_vq_low 2 --quantizer_type rvq --outside_box_loss_weight 0.1 --disable_fim --disable_bbw --snr_db_train_min 0.0 --snr_db_train_max 20.0 --snr_db_eval 10.0 --yolo_weights ''

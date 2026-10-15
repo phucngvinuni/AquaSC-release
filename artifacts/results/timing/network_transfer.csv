@@ -1,0 +1,11 @@
+link,method,payload_bytes,n,mean_ms,std_ms,p50_ms,p95_ms,min_ms,max_ms,note
+Pi 4B -> desktop (Tailscale; relay/direct alternated),scp over one persistent ssh -M connection,384,20,229.86,87.02,200.68,400.02,149.31,,size-matched random stand-in for the 385 B AquaSC payload (6421 B JPEG sample: next row)
+Pi 4B -> desktop (Tailscale; relay/direct alternated),scp over one persistent ssh -M connection,6421,20,216.49,38.43,211.41,275.98,163.43,,
+laptop -> PC (Tailscale via DERP sin; NOT the Pi link),TCP persistent + 1-byte ack,1,20,77.34,5.06,76.11,93.53,72.40,93.53,RTT floor
+laptop -> PC (Tailscale via DERP sin; NOT the Pi link),TCP persistent + 1-byte ack,385,20,95.23,77.31,76.33,422.64,72.84,422.64,corrected AquaSC payload; mean inflated by one outlier
+laptop -> PC (Tailscale via DERP sin; NOT the Pi link),TCP persistent + 1-byte ack,49152,20,87.68,8.94,86.03,117.73,78.29,117.73,corrected ROI-JSCC rcpp32 payload (6144 symbols x 8 B)
+laptop -> PC (Tailscale via DERP sin; NOT the Pi link),TCP persistent + 1-byte ack,1048576,20,1966.06,382.29,2046.42,2926.27,1279.07,2926.27,bandwidth probe only
+laptop(WSL2) -> PC (Tailscale via DERP sin; NOT the Pi link),ssh true through the control socket,0,20,107.19,3.36,106.50,116.62,102.67,116.62,command round-trip floor
+laptop(WSL2) -> PC (Tailscale via DERP sin; NOT the Pi link),scp over one persistent ssh -M connection,385,20,543.80,48.25,533.21,736.75,496.59,736.75,
+laptop(WSL2) -> PC (Tailscale via DERP sin; NOT the Pi link),scp over one persistent ssh -M connection,49152,20,759.41,453.58,686.40,2604.25,524.66,2604.25,
+laptop(WSL2) -> PC (Tailscale via DERP sin; NOT the Pi link),scp over one persistent ssh -M connection,1048576,20,1544.73,632.33,1632.46,3113.21,388.47,3113.21,bandwidth probe only

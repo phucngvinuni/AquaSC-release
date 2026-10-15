@@ -1,0 +1,24 @@
+N=432 images; n_pos patches: min=4 median=62 mean=70.75 max=382; frac n_pos<63: 0.502; n_pos>63: 0.481; ==63: 0.016; zero-positive imgs: 0
+oracle_box                   prec 0.7883 [0.7627,0.8139]  rec 0.8385 [0.8182,0.8589]  n=432 (recall n=432, skipped 0)  routing_baselines.oracle_box_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+uniform                      prec 0.0862 [0.0761,0.0963]  rec 0.0689 [0.0616,0.0763]  n=432 (recall n=432, skipped 0)  routing_baselines.uniform_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+  uniform selected patch indices (image 0): [491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502] ... identical across images: True | set == first 63 indices? False | unique sets across images: 1
+random seed=42               prec 0.0903 [0.0838,0.0968]  rec 0.0834 [0.0793,0.0874]  n=432 (recall n=432, skipped 0)  routing_baselines.random_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+random seed=43               prec 0.0906 [0.0835,0.0977]  rec 0.0779 [0.0741,0.0817]  n=432 (recall n=432, skipped 0)  routing_baselines.random_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+random seed=44               prec 0.0895 [0.0827,0.0963]  rec 0.0780 [0.0742,0.0818]  n=432 (recall n=432, skipped 0)  routing_baselines.random_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+random seed=45               prec 0.0899 [0.0833,0.0966]  rec 0.0814 [0.0772,0.0857]  n=432 (recall n=432, skipped 0)  routing_baselines.random_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+random seed=46               prec 0.0891 [0.0822,0.0961]  rec 0.0779 [0.0741,0.0818]  n=432 (recall n=432, skipped 0)  routing_baselines.random_scores+apply_topk
+  matches saved coded-run mask: (True, True, 0)
+random 5 seeds: precision mean=0.0899 std=0.0006; recall mean=0.0797 std=0.0025
+FIM (saved npz)              prec 0.7700 [0.7437,0.7962]  rec 0.8149 [0.7938,0.8360]  n=432 recall n=432 n_no_positive=0
+detector_heatmap (saved npz) prec 0.6876 [0.6629,0.7123]  rec 0.7247 [0.7052,0.7442]  n=432 recall n=432 n_no_positive=0
+
+Percentile-bootstrap (images, n_boot=10000, seed=42) CIs:
+  oracle_box   prec [0.7622,0.8124] rec [0.8179,0.8584]
+  uniform      prec [0.0765,0.0964] rec [0.0618,0.0764]
+  random42     prec [0.0841,0.0969] rec [0.0794,0.0873]uniform set min/max/contiguous: 491 585 False torch 2.1.2

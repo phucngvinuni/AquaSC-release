@@ -1,0 +1,826 @@
+# model_util.py
+import math
+from typing import Tuple, Optional
+import numpy as np
+# from timm.models.registry import register_model # Not registering here, but in model.py
+from timm.models.layers import drop_path, to_2tuple, trunc_normal_
+import torch
+import torch.nn as nn
+from functools import partial
+import torch.nn.functional as F
+from digital_channel import transmit_and_receive_indices_batch as transmit_digital_indices
+
+
+
+def _cfg(url='', **kwargs): # Keep _cfg if model.py uses it
+    return {
+        'url': url, 'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
+        'crop_pct': .9, 'interpolation': 'bicubic',
+        'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), **kwargs
+    }
+
+class DropPath(nn.Module): # ... (as before) ...
+    def __init__(self, drop_prob=None): super(DropPath, self).__init__(); self.drop_prob = drop_prob
+    def forward(self, x): return drop_path(x, self.drop_prob, self.training)
+    def extra_repr(self) -> str: return f'p={self.drop_prob}'
+
+class Mlp(nn.Module): # ... (as before) ...
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+        super().__init__(); out_features = out_features or in_features; hidden_features = hidden_features or in_features
+        self.fc1 = nn.Linear(in_features, hidden_features); self.act = act_layer(); self.fc2 = nn.Linear(hidden_features, out_features); self.drop = nn.Dropout(drop)
+    def forward(self, x): x = self.fc1(x); x = self.act(x); x = self.fc2(x); x = self.drop(x); return x
+
+class Attention(nn.Module): # ... (as before, with self.all_head_dim fix) ...
+    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., attn_head_dim=None):
+        super().__init__(); self.num_heads = num_heads
+        if attn_head_dim is None and dim % num_heads != 0:
+            raise ValueError(
+                f"Attention: dim ({dim}) is not divisible by num_heads ({num_heads}). "
+                f"head_dim = dim // num_heads would silently truncate attention to "
+                f"{(dim // num_heads) * num_heads} dims. Use e.g. 8 heads with dim 512 (head_dim 64).")
+        head_dim = dim // num_heads
+        if attn_head_dim is not None: head_dim = attn_head_dim
+        self.all_head_dim = head_dim * self.num_heads; self.scale = qk_scale or head_dim ** -0.5
+        self.qkv = nn.Linear(dim, self.all_head_dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop); self.proj = nn.Linear(self.all_head_dim, dim); self.proj_drop = nn.Dropout(proj_drop)
+    def forward(self, x):
+        B, N, C = x.shape; head_dim_calc = self.all_head_dim // self.num_heads
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, head_dim_calc).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv.unbind(0); q = q * self.scale
+        attn = (q @ k.transpose(-2, -1)).softmax(dim=-1); attn = self.attn_drop(attn)
+        x = (attn @ v).transpose(1, 2).reshape(B, N, self.all_head_dim)
+        x = self.proj(x); x = self.proj_drop(x); return x
+
+class Block(nn.Module): # ... (as before) ...
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., drop_path=0., init_values=0.0, act_layer=nn.GELU, norm_layer=nn.LayerNorm, attn_head_dim=None):
+        super().__init__(); self.norm1 = norm_layer(dim)
+        self.attn = Attention(dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, attn_head_dim=attn_head_dim)
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity(); self.norm2 = norm_layer(dim)
+        mlp_hidden_dim = int(dim * mlp_ratio); self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        if init_values > 0: self.gamma_1 = nn.Parameter(init_values * torch.ones(dim)); self.gamma_2 = nn.Parameter(init_values * torch.ones(dim))
+        else: self.gamma_1, self.gamma_2 = None, None
+    def forward(self, x):
+        if self.gamma_1 is None: x = x + self.drop_path(self.attn(self.norm1(x))); x = x + self.drop_path(self.mlp(self.norm2(x)))
+        else: x = x + self.drop_path(self.gamma_1 * self.attn(self.norm1(x))); x = x + self.drop_path(self.gamma_2 * self.mlp(self.norm2(x)))
+        return x
+
+class PatchEmbed(nn.Module): # ... (as before) ...
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768):
+        super().__init__(); img_size = to_2tuple(img_size); patch_size = to_2tuple(patch_size)
+        self.img_size = img_size; self.patch_size = patch_size
+        self.patch_shape = (img_size[0] // patch_size[0], img_size[1] // patch_size[1])
+        self.num_patches = self.patch_shape[0] * self.patch_shape[1]
+        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+    def forward(self, x, **kwargs):
+        B, C, H, W = x.shape
+        if not (H == self.img_size[0] and W == self.img_size[1]): raise ValueError(f"Input image size ({H}*{W}) doesn't match model PatchEmbed size ({self.img_size[0]}*{self.img_size[1]}).")
+        x = self.proj(x).flatten(2).transpose(1, 2); return x
+
+def get_sinusoid_encoding_table(n_position, d_hid, cls_token=False): # ... (as before) ...
+    if cls_token: n_position = n_position + 1
+    def get_position_angle_vec(position): return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
+    sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
+    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2]); sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
+    return torch.FloatTensor(sinusoid_table).unsqueeze(0)
+
+class ViTEncoder_Van(nn.Module): # ... (as before) ...
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4., qkv_bias=True, drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm, init_values=0.0, use_learnable_pos_emb=False):
+        super().__init__(); self.num_features = self.embed_dim = embed_dim
+        self.patch_embed = PatchEmbed(img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim); self.num_patches = self.patch_embed.num_patches
+        if use_learnable_pos_emb: self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches, embed_dim)); trunc_normal_(self.pos_embed, std=.02)
+        else: self.register_buffer('pos_embed', get_sinusoid_encoding_table(self.num_patches, embed_dim), persistent=False)
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]; self.blocks = nn.ModuleList([Block(dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop_rate, drop_path=dpr[i], norm_layer=norm_layer, init_values=init_values) for i in range(depth)])
+        self.norm = norm_layer(embed_dim); self.apply(self._init_weights_vit)
+    def _init_weights_vit(self, m):
+        if isinstance(m, nn.Linear): trunc_normal_(m.weight, std=.02)
+        if isinstance(m, nn.Linear) and m.bias is not None: nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm): nn.init.constant_(m.bias, 0); nn.init.constant_(m.weight, 1.0)
+    def forward(self, x_img: torch.Tensor, encoder_boolean_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+        x_tokens = self.patch_embed(x_img); x_tokens = x_tokens + self.pos_embed
+        x_proc = x_tokens
+        if encoder_boolean_mask is not None and encoder_boolean_mask.any(): # True in mask means MASKED for encoder
+            # Assuming B, L, D for x_tokens and B, L for mask
+            # This simple selection requires all items in batch to have same number of visible tokens
+            # or for x_tokens[~encoder_boolean_mask] to be followed by a padding/unpadding mechanism
+            # For mask_ratio = 0, encoder_boolean_mask is all False, ~encoder_boolean_mask is all True, all tokens are kept.
+            x_proc = x_tokens[~encoder_boolean_mask].view(x_tokens.shape[0], -1, self.embed_dim)
+        for blk in self.blocks: x_proc = blk(x_proc)
+        x_proc = self.norm(x_proc); return x_proc
+
+
+class ViTDecoder_ImageReconstruction(nn.Module):
+    def __init__(self, patch_size: int = 16, num_total_patches: int = 196,
+                 embed_dim: int = 192, # Input token dimension for decoder's ViT blocks
+                 depth: int = 4, num_heads: int = 4, mlp_ratio: float = 4.,
+                 qkv_bias: bool = True, norm_layer=nn.LayerNorm, init_values: float = 0.0,
+                 out_chans: int = 3):
+        super().__init__()
+        self.num_total_patches = num_total_patches
+        self.patch_size_h, self.patch_size_w = to_2tuple(patch_size)
+        self.embed_dim = embed_dim # For ViT blocks
+
+        self.mask_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        self.register_buffer('pos_embed_decoder', get_sinusoid_encoding_table(self.num_total_patches, embed_dim), persistent=False)
+
+        dpr = [x.item() for x in torch.linspace(0, 0.1, depth)]
+        self.blocks = nn.ModuleList([
+            Block(dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias,
+                  norm_layer=norm_layer, init_values=init_values, drop_path=dpr[i])
+            for i in range(depth)])
+        self.norm = norm_layer(embed_dim)
+
+        # CNN Head
+        # Calculate number of upsampling stages (assuming 2x upsampling per stage)
+        # e.g., patch_size 16 -> 16x upsample -> log2(16) = 4 stages
+        if patch_size == 0: raise ValueError("patch_size cannot be zero.")
+        num_upsample_stages = int(math.log2(patch_size))
+        if 2**num_upsample_stages != patch_size:
+            raise ValueError(f"patch_size ({patch_size}) must be a power of 2 for this simple CNN head design.")
+
+        cnn_layers = []
+        current_channels = embed_dim
+        
+        for i in range(num_upsample_stages):
+            out_c = current_channels // 2 if i < num_upsample_stages - 1 else out_chans
+            if out_c < out_chans and i < num_upsample_stages -1 : # Ensure intermediate channels don't go below out_chans
+                out_c = max(out_chans, current_channels // 2, 16) # Ensure some minimum channels
+            
+            cnn_layers.append(
+                nn.ConvTranspose2d(current_channels, out_c, kernel_size=4, stride=2, padding=1)
+            )
+            if i < num_upsample_stages - 1: # No activation/norm before final output if it's sigmoid/tanh
+                cnn_layers.append(nn.BatchNorm2d(out_c)) # Using BatchNorm for CNNs
+                cnn_layers.append(nn.GELU())
+            current_channels = out_c
+        
+        cnn_layers.append(nn.Sigmoid())
+        self.cnn_pixel_head = nn.Sequential(*cnn_layers)
+        
+        trunc_normal_(self.mask_token, std=.02)
+        self.apply(self._init_weights_vit)
+
+    def _init_weights_vit(self, m):
+        if isinstance(m, nn.Linear): trunc_normal_(m.weight, std=.02)
+        if isinstance(m, nn.Linear) and m.bias is not None: nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm): nn.init.constant_(m.bias, 0); nn.init.constant_(m.weight, 1.0)
+        elif isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+             trunc_normal_(m.weight, std=.02)
+             if m.bias is not None: nn.init.constant_(m.bias, 0)
+
+    def forward(self,
+                x_vis_tokens: torch.Tensor,
+                encoder_mask_boolean: torch.Tensor,
+                full_image_num_patches_h: int,
+                full_image_num_patches_w: int,
+                ids_restore_if_mae: Optional[torch.Tensor] = None
+               ) -> torch.Tensor:
+        B, N_processed_tokens, D_in = x_vis_tokens.shape
+        assert D_in == self.embed_dim, f"Decoder input embed_dim mismatch. Expected {self.embed_dim}, got {D_in}"
+
+        x_full_sequence: torch.Tensor
+        pos_embed_expanded = self.pos_embed_decoder.expand(B, -1, -1).to(x_vis_tokens.device, x_vis_tokens.dtype) # Ensure pos_embed matches x_vis_tokens dtype
+
+        if not encoder_mask_boolean.any(): # Case 1: No masking by encoder (mask_ratio=0.0)
+            # ... (this part was likely okay, but ensure pos_embed dtype matches) ...
+            if N_processed_tokens != self.num_total_patches:
+                raise ValueError(f"Decoder received {N_processed_tokens} tokens but encoder_mask indicates no masking. Expected {self.num_total_patches} tokens.")
+            x_full_sequence = x_vis_tokens + pos_embed_expanded # Add after ensuring pos_embed_expanded has same dtype
+        
+        else: # Case 2: MAE-style masking was done by encoder
+            if ids_restore_if_mae is None:
+                # Fallback path if ids_restore is not provided
+                # Initialize full sequence with mask_token + pos_embed
+                # Ensure mask_token is cast to the correct dtype before adding to pos_embed_expanded
+                # and before assigning to x_full_sequence if x_full_sequence is half.
+                
+                # Create the placeholder with the correct dtype from the start
+                x_full_sequence = self.mask_token.expand(B, self.num_total_patches, -1).to(x_vis_tokens.dtype) + \
+                                  pos_embed_expanded # pos_embed_expanded now matches x_vis_tokens.dtype
+
+                # Place visible tokens (already with their pos_embeds from encoder if that's the MAE design)
+                # This path needs careful re-evaluation if ViTEncoder_Van doesn't add pos_embed before returning visible tokens
+                # Assuming x_vis_tokens are *just* the features and need pos_embed added here
+                
+                # A common MAE decoder pattern:
+                # 1. Initialize all N_total positions with mask_token + its_pos_embed
+                # 2. Scatter/place visible_tokens + their_pos_embeds into these positions.
+
+                # Let's refine this MAE path (without ids_restore, relying on boolean mask)
+                # This assumes x_vis_tokens are just the features of visible patches, WITHOUT pos_embed yet.
+                
+                # Create indices for scattering
+                # ~encoder_mask_boolean gives True for visible patches
+                visible_indices_flat = (~encoder_mask_boolean).nonzero(as_tuple=False) # [TotalVisible, 2] (batch_idx, patch_idx_in_seq)
+                
+                # Ensure x_vis_tokens is [TotalVisibleAcrossBatch, D_in] if it comes flattened from encoder logic
+                # Or if it's [B, N_vis_per_item, D_in], we need to handle it.
+                # Your ViTEncoder_Van's current forward: x_proc = x_tokens[~encoder_boolean_mask].view(B, -1, D)
+                # This means x_vis_tokens IS [B, N_vis_per_item, D] where N_vis_per_item can vary.
+                # This makes direct scatter hard without padding or looping.
+                # For MAE, it's typical that N_vis_per_item IS fixed by sampling a fixed number of visible patches.
+
+                # --- Simpler logic for mask_ratio > 0 if ids_restore is NOT used ---
+                # This requires that x_vis_tokens contains features for *all* patches,
+                # where masked patches might have a zeroed-out or placeholder representation
+                # from the encoder, or that the encoder always returns a fixed number of visible tokens.
+                # Given your current ViTEncoder_Van, if masking is active, it returns variable N_vis.
+                # This is the core difficulty without ids_restore.
+
+                # FOR NOW, LET'S ASSUME A SCENARIO WHERE ids_restore_if_mae IS PROVIDED FOR MASKING
+                # OR that the mask_ratio = 0.0 (which makes encoder_mask_boolean.any() False)
+                # The error specifically happens in the ids_restore_if_mae=None path when encoder_mask_boolean.any() is True.
+                
+                # If ids_restore_if_mae is None AND encoder_mask_boolean.any() is True:
+                # This path is inherently complex to make batch-efficient without ids_restore
+                # or fixed N_vis. The print statement for NotImplementedError was good.
+                # For the dtype error, if we reach here:
+                # x_full_sequence needs to be initialized with the target dtype.
+                # self.mask_token needs to be cast.
+
+                # print(f"Warning: MAE-style decoding (mask_ratio > 0) without 'ids_restore_if_mae'. "
+                #       "Attempting to place visible tokens based on 'encoder_mask_boolean'. "
+                #       "This can be inefficient or error-prone if num_visible_tokens varies per batch item.")
+
+                # Initialize full sequence with the dtype of x_vis_tokens (which could be float16 due to AMP)
+                x_full_sequence = torch.zeros(B, self.num_total_patches, D_in,
+                                              dtype=x_vis_tokens.dtype, device=x_vis_tokens.device)
+                
+                # Add positional embeddings to all positions first
+                x_full_sequence += pos_embed_expanded # pos_embed_expanded is now same dtype as x_vis_tokens
+
+                # Place mask_tokens (cast to correct dtype) at MASKED positions
+                # self.mask_token is nn.Parameter, default float32
+                mask_token_casted = self.mask_token.to(x_full_sequence.dtype)
+                # Correctly expand mask_token_casted for broadcasting to masked positions
+                # This assignment needs to be careful if encoder_mask_boolean refers to the full sequence
+                # but x_full_sequence was just init with pos_embeds.
+                # Better: init with mask_token+pos_embed for masked, then fill visible.
+
+                # Re-initialize x_full_sequence properly:
+                x_full_sequence = mask_token_casted.expand(B, self.num_total_patches, -1) + pos_embed_expanded
+                
+                # Place visible tokens. x_vis_tokens are features. They also need their pos_embeds added.
+                # This assumes ViTEncoder_Van did NOT add pos_embed to the x_vis_tokens it returned.
+                # If ViTEncoder_Van *did* add pos_embed, then we should only add pos_embed to mask_tokens.
+                
+                # Assuming x_vis_tokens from encoder does NOT have pos_embed yet for this MAE path.
+                # Let's reconstruct assuming x_vis_tokens need their pos_embeds.
+                # And that N_processed_tokens is the number of visible tokens *per image*.
+                
+                # This scatter is hard without ids_restore or fixed N_vis.
+                # The error `RuntimeError: Index put requires the source and destination dtypes match`
+                # occurs at `x_full_sequence[encoder_mask_boolean] = self.mask_token...`
+                # because x_full_sequence might be float16 and self.mask_token float32.
+
+                # Revised MAE path when ids_restore is None (simpler scatter, less robust for variable N_vis):
+                # This path is entered if encoder_mask_boolean.any() is True and ids_restore_if_mae is None.
+                
+                # 1. Create a tensor of mask tokens + their positional embeddings
+                masked_token_representation = self.mask_token.to(x_vis_tokens.dtype) + pos_embed_expanded
+                
+                # 2. Create a tensor of visible tokens + their positional embeddings
+                # We need to select the correct positional embeddings for the visible tokens.
+                # This is tricky if x_vis_tokens is already a packed representation of visible tokens.
+                # Let's assume ViTEncoder_Van returns features of visible tokens *and these tokens already had pos_embed added*.
+                # If so, x_vis_tokens are ready.
+                
+                # Initialize x_full_sequence with the dtype of x_vis_tokens
+                x_full_sequence = torch.empty(B, self.num_total_patches, D_in,
+                                              dtype=x_vis_tokens.dtype, device=x_vis_tokens.device)
+                
+                # For each item in batch, fill x_full_sequence
+                for i in range(B):
+                    # Get the boolean mask for the current item: True for masked positions
+                    item_encoder_mask = encoder_mask_boolean[i]
+                    # Get positional embeddings for the current item
+                    item_pos_embed = pos_embed_expanded[i]
+                    
+                    # Fill masked positions
+                    x_full_sequence[i, item_encoder_mask] = self.mask_token.to(x_vis_tokens.dtype) + item_pos_embed[item_encoder_mask]
+                    
+                    # Fill visible positions
+                    # This assumes x_vis_tokens[i] corresponds to the ~item_encoder_mask positions.
+                    # If x_vis_tokens is a packed tensor [TotalVisAcrossBatch, D], this needs global indexing.
+                    # Given ViTEncoder_Van returns [B, N_vis_per_item, D], this is per item.
+                    x_full_sequence[i, ~item_encoder_mask] = x_vis_tokens[i] # Assumes x_vis_tokens[i] already has pos_embed from encoder
+                                                                          # or that pos_embed was added to x_vis_tokens before this function
+
+            else: # Proper MAE un-shuffling with ids_restore
+                num_masked_patches = self.num_total_patches - N_processed_tokens
+                if num_masked_patches < 0: raise ValueError("More visible tokens than total patches for ids_restore.")
+
+                mask_tokens_to_append = self.mask_token.repeat(B, num_masked_patches, 1).to(x_vis_tokens.dtype) # Cast to match
+                
+                # x_vis_tokens are already processed by encoder. Add pos_embed after unshuffle.
+                x_temp_shuffled_or_partial = torch.cat([x_vis_tokens, mask_tokens_to_append], dim=1)
+                
+                x_unshuffled = torch.gather(x_temp_shuffled_or_partial, dim=1,
+                                            index=ids_restore_if_mae.unsqueeze(-1).expand(-1, -1, D_in))
+                x_full_sequence = x_unshuffled + pos_embed_expanded # Add pos_embed to full, unshuffled sequence
+
+        # Pass the full sequence through ViT decoder blocks
+        decoded_tokens = x_full_sequence
+        for blk in self.blocks:
+            decoded_tokens = blk(decoded_tokens)
+        decoded_tokens = self.norm(decoded_tokens)
+
+        # Reshape for CNN head and generate pixels
+        x_feat_map = decoded_tokens.transpose(1, 2).reshape(
+            B, self.embed_dim, full_image_num_patches_h, full_image_num_patches_w
+        )
+        reconstructed_image = self.cnn_pixel_head(x_feat_map)
+        return reconstructed_image
+
+
+class HierarchicalQuantizer(nn.Module):
+    def __init__(self, num_embeddings: int, embedding_dim: int, commitment_cost: float = 0.25,
+                 hier_init: bool = True, linkage: str = 'ward'):
+        super().__init__()
+        self.num_embeddings = num_embeddings
+        self.embedding_dim = embedding_dim
+        self.commitment_cost = commitment_cost
+        self.embedding = nn.Embedding(self.num_embeddings, self.embedding_dim)
+        self.embedding.weight.data.uniform_(-1.0 / self.num_embeddings, 1.0 / self.num_embeddings)
+        # Các thuộc tính cho hierarchical init, có thể giữ lại hoặc bỏ đi nếu không dùng
+        self.hier_init_requested = hier_init
+        self.hier_init_done = False
+        self.linkage = linkage
+        self.register_buffer('usage_counts', torch.zeros(self.num_embeddings), persistent=False)
+
+    def get_indices(self, x_flat: torch.Tensor) -> torch.Tensor:
+        """Chỉ tìm và trả về các chỉ số."""
+        distances_sq = torch.sum(x_flat**2, dim=1, keepdim=True) + \
+                       torch.sum(self.embedding.weight**2, dim=1) - \
+                       2 * torch.matmul(x_flat, self.embedding.weight.t())
+        return torch.argmin(distances_sq, dim=1)
+
+    def logits(self, x_flat: torch.Tensor) -> torch.Tensor:
+        """2026-09-18 (encoder-distillation, low-path index-agreement loss):
+        NEGATIVE squared-distance logits, side-effect-free (no usage_counts
+        mutation), differentiable w.r.t. x_flat -- for cross-entropy against
+        an externally supplied target index. Flat-codebook counterpart of
+        ResidualQuantizer.stage_logits (single stage, no residual chain).
+        """
+        distances_sq = (torch.sum(x_flat**2, dim=1, keepdim=True) +
+                        torch.sum(self.embedding.weight**2, dim=1) -
+                        2 * torch.matmul(x_flat, self.embedding.weight.t()))
+        return -distances_sq
+
+    def reset_diagnostics(self):
+        self.usage_counts.zero_()
+
+    def get_diagnostics(self) -> dict:
+        total_usage = self.usage_counts.sum().item()
+        if total_usage <= 0:
+            return {'utilization': 0.0, 'perplexity': 0.0,
+                    'dead_codewords': int(self.num_embeddings), 'entropy_bits': 0.0}
+        usage_probs = self.usage_counts / total_usage
+        used_mask = self.usage_counts > 0
+        utilization = used_mask.float().mean().item()
+        entropy_bits = -(usage_probs * torch.log2(usage_probs + 1e-10)).sum().item()
+        perplexity = 2.0 ** entropy_bits
+        dead_codewords = int(self.num_embeddings - used_mask.sum().item())
+        return {'utilization': utilization, 'perplexity': perplexity,
+                'dead_codewords': dead_codewords, 'entropy_bits': entropy_bits}
+
+    def forward(self, x: torch.Tensor, return_per_token_loss: bool = False):
+        original_shape = x.shape
+        if x.numel() == 0:
+            # Handle empty input
+            return (torch.zeros_like(x), torch.tensor(0.0, device=x.device), 
+                    torch.tensor(0.0, device=x.device), torch.tensor([], dtype=torch.long, device=x.device))
+
+        x_flat = x.view(-1, self.embedding_dim)
+
+        # Tính toán khoảng cách Euclidean bình phương
+        distances_sq = (torch.sum(x_flat**2, dim=1, keepdim=True) +
+                        torch.sum(self.embedding.weight**2, dim=1) -
+                        2 * torch.matmul(x_flat, self.embedding.weight.t()))
+
+        # Tìm chỉ số của vector gần nhất
+        encoding_indices = torch.argmin(distances_sq, dim=1)
+        self.usage_counts += torch.bincount(encoding_indices, minlength=self.num_embeddings).float()
+        quantized_flat = self.embedding(encoding_indices)
+        
+        # --- Tính VQ Loss và sử dụng Straight-Through Estimator (STE) ---
+        
+        # Loss để cập nhật sổ mã (codebook)
+        codebook_loss = F.mse_loss(quantized_flat, x_flat.detach(), reduction='none')
+        
+        # Loss để cập nhật encoder (commitment)
+        commitment_loss = F.mse_loss(x_flat, quantized_flat.detach(), reduction='none')
+
+        per_token_total_vq_loss = codebook_loss + self.commitment_cost * commitment_loss
+        
+        quantized_output_tokens = quantized_flat.view(original_shape)
+        quantized_output_tokens_st = x + (quantized_output_tokens - x).detach()
+
+        encodings_one_hot = F.one_hot(encoding_indices, self.num_embeddings).float()
+        avg_probs = torch.mean(encodings_one_hot, dim=0)
+        perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
+
+        if return_per_token_loss:
+            # Trả về loss trên từng token nếu cần cho FIM-weighting
+            return quantized_output_tokens_st, per_token_total_vq_loss.mean(-1), perplexity, encoding_indices
+        else:
+            # Trả về loss trung bình
+            return quantized_output_tokens_st, per_token_total_vq_loss.mean(), perplexity, encoding_indices
+
+class ResidualQuantizer(nn.Module):
+    """Residual vector quantizer (RVQ) for the high-fidelity path (plan H1, §7.4).
+
+    Recurrence (S stages of b bits each, effective rate S*b):
+        r_0 = x;  for s in 1..S:  c_s = C_s[argmin_{c in C_s} ||r_{s-1} - c||^2];
+        r_s = r_{s-1} - c_s;  x_hat = sum_s c_s.
+
+    Each stage is an nn.Embedding(2^b, dim) initialized uniform_(-1/2^b, 1/2^b)
+    (per-stage amplitude, NOT -1/2^(S*b) -- the +/-3.8e-6 flat-2^18 init is part of
+    why the flat codebook collapses).
+
+    Straight-through estimator per stage mirrors HierarchicalQuantizer:
+        q_s = r_{s-1} + (c_s - r_{s-1}).detach()   # value c_s, gradient to r_{s-1}
+    The lookup residual passed to stage s+1 is detached (r_s = r_{s-1} - c_s.detach()),
+    so codebooks only receive their own codebook loss while the encoder receives the
+    stage-1 commitment loss and the downstream reconstruction gradient via the STE
+    identity -- the standard VQ-VAE / EnCodec / SoundStream training pattern.
+
+    Returned API matches HierarchicalQuantizer.forward():
+        (quantized_st, vq_loss, perplexity, indices)
+    where vq_loss is per-token shaped when return_per_token_loss=True (raw loss per
+    token summed over stages, so the Eq. (4) FIM weighting in model.py is unchanged)
+     and indices are PACKED stage indices: one integer per token,
+        index = sum_s idx_s * (2^b)^(S-1-s),
+     i.e. the S stage bit-fields concatenated. The digital LDPC bridge now splits
+     this packed representation back into per-stage fields for RVQ UEP: stage 1
+     uses the rate-1/3 segment and stages 2--3 use the rate-1/2 segment. The packed
+     form remains the in-memory model API and the fallback for the uncoded path.
+    """
+
+    def __init__(self, num_stages: int, bits_per_stage: int, embedding_dim: int,
+                 commitment_cost: float = 0.25, ema_decay: float = 0.0):
+        super().__init__()
+        if num_stages < 1: raise ValueError(f"num_stages must be >= 1, got {num_stages}")
+        if bits_per_stage < 1: raise ValueError(f"bits_per_stage must be >= 1, got {bits_per_stage}")
+        self.num_stages = int(num_stages)
+        self.bits_per_stage = int(bits_per_stage)
+        self.num_embeddings_per_stage = 2 ** self.bits_per_stage
+        # Effective flat-codebook size for the same bit budget (2^(S*b) = 262144 for 3x6b).
+        # Keeps `int(np.log2(model.quantizer_high.num_embeddings))` valid in model.py.
+        self.num_embeddings = self.num_embeddings_per_stage ** self.num_stages
+        self.embedding_dim = embedding_dim
+        self.commitment_cost = commitment_cost
+        self.ema_decay = float(ema_decay)
+
+        self.codebooks = nn.ModuleList([
+            nn.Embedding(self.num_embeddings_per_stage, embedding_dim)
+            for _ in range(self.num_stages)
+        ])
+        init_amp = 1.0 / self.num_embeddings_per_stage
+        for cb in self.codebooks:
+            cb.weight.data.uniform_(-init_amp, init_amp)
+
+        self.register_buffer('usage_counts',
+                             torch.zeros(self.num_stages, self.num_embeddings_per_stage),
+                             persistent=False)
+        # Most recent feature assigned to each codeword per epoch (dead-code restart pool).
+        self.register_buffer('last_assigned',
+                             torch.zeros(self.num_stages, self.num_embeddings_per_stage,
+                                         embedding_dim),
+                             persistent=False)
+        # Subsample of real encoder features from the k-means init (restart fallback pool).
+        self.register_buffer('kmeans_pool', torch.empty(0, embedding_dim), persistent=False)
+
+        # EMA codebook state (RVQFIX): standard VQ-VAE-2 running sums/counts per stage.
+        if self.ema_decay > 0:
+            self.register_buffer('ema_cluster_size',
+                                 torch.zeros(self.num_stages, self.num_embeddings_per_stage),
+                                 persistent=True)
+            self.register_buffer('ema_sum',
+                                 torch.zeros(self.num_stages, self.num_embeddings_per_stage,
+                                             embedding_dim),
+                                 persistent=True)
+            # With EMA the embeddings are updated by EMA only -- exclude from the optimizer
+            # (get_parameter_groups skips params with requires_grad=False).
+            for cb in self.codebooks:
+                cb.weight.requires_grad_(False)
+        else:
+            self.register_buffer('ema_cluster_size',
+                                 torch.zeros(self.num_stages, self.num_embeddings_per_stage),
+                                 persistent=True)
+            self.register_buffer('ema_sum',
+                                 torch.zeros(self.num_stages, self.num_embeddings_per_stage,
+                                             embedding_dim),
+                                 persistent=True)
+
+    # ------------------------------------------------------------------ indices
+    def pack_indices(self, stage_indices) -> torch.Tensor:
+        """Pack stage indices into one integer per token: sum_s idx_s * (2^b)^(S-1-s).
+
+        Accepts a list/tuple of S LongTensors (each shape (N,)) or a stacked (S, N)
+        tensor. Returns LongTensor (N,) with each entry in [0, 2^(S*b)).
+        """
+        if isinstance(stage_indices, torch.Tensor):
+            stacked = stage_indices
+        else:
+            stacked = torch.stack(list(stage_indices), dim=0)
+        if stacked.shape[0] != self.num_stages:
+            raise ValueError(f"Expected {self.num_stages} stage index tensors, got {stacked.shape[0]}")
+        shift = torch.arange(self.num_stages, device=stacked.device) * self.bits_per_stage
+        shift = (self.num_stages - 1) * self.bits_per_stage - shift
+        return (stacked.long() * (2 ** shift.unsqueeze(1))).sum(dim=0)
+
+    @staticmethod
+    def unpack_indices(packed: torch.Tensor, num_stages: int, bits_per_stage: int) -> torch.Tensor:
+        """Inverse of pack_indices: packed LongTensor (N,) -> stage indices (S, N).
+
+        Bit field s (most significant = stage 1) is extracted per token.
+        """
+        mask = 2 ** bits_per_stage - 1
+        packed = packed.long()
+        stages = []
+        for _ in range(num_stages):
+            stages.append(packed & mask)
+            packed = packed >> bits_per_stage
+        return torch.stack(stages[::-1], dim=0)
+
+    def decode(self, packed: torch.Tensor) -> torch.Tensor:
+        """Receiver-side reconstruction: unpack packed indices and sum stage codewords.
+
+        Returns (N, embedding_dim) = sum_s C_s[idx_s], the RVQ counterpart of the
+        flat codebook's `self.embedding(indices)` used in the digital eval path.
+        """
+        stage_indices = self.unpack_indices(packed, self.num_stages, self.bits_per_stage)
+        out = torch.zeros(packed.shape[0], self.embedding_dim,
+                          device=packed.device, dtype=packed.dtype)
+        for s in range(self.num_stages):
+            c = self.codebooks[s](stage_indices[s])
+            out = out + c
+        return out
+
+    # ------------------------------------------------------------- diagnostics
+    def reset_diagnostics(self):
+        self.usage_counts.zero_()
+        self.last_assigned.zero_()
+
+    def set_codebook(self, stage: int, weight: torch.Tensor):
+        """Overwrite one stage codebook (k-means init or restart); sync EMA state."""
+        cb = self.codebooks[stage]
+        with torch.no_grad():
+            w = weight.to(cb.weight.device)
+            if w.dtype != cb.weight.dtype: w = w.to(cb.weight.dtype)
+            cb.weight.data.copy_(w)
+            self.ema_sum[stage].copy_(w)
+            self.ema_cluster_size[stage].fill_(1.0)
+
+    def restart_dead_codewords(self, threshold: float = 1.0, seed: int = 42) -> dict:
+        """Re-initialize codewords with usage below `threshold` from this epoch's
+        assigned features (last_assigned of alive codes, else the k-means pool).
+
+        Returns {'stage_s': n_restarted} for stages with restarts.
+        """
+        if threshold <= 0:
+            return {}
+        rng = torch.Generator(device=self.usage_counts.device)
+        rng.manual_seed(seed)
+        restarts = {}
+        for s, cb in enumerate(self.codebooks):
+            counts = self.usage_counts[s]
+            dead = counts < threshold
+            n_dead = int(dead.sum().item())
+            if n_dead == 0:
+                continue
+            alive = counts >= threshold
+            if alive.any():
+                pool = self.last_assigned[s][alive]
+                pick = torch.randint(0, pool.shape[0], (n_dead,), generator=rng,
+                                     device=self.usage_counts.device)
+                new_w = pool[pick].clone()
+            elif self.kmeans_pool.numel() > 0:
+                pick = torch.randint(0, self.kmeans_pool.shape[0], (n_dead,),
+                                     generator=rng, device=self.usage_counts.device)
+                new_w = self.kmeans_pool[pick].clone()
+            else:
+                print(f"  [RVQFIX] stage {s}: no alive codes and no k-means pool; "
+                      f"skipping restart")
+                continue
+            with torch.no_grad():
+                cb.weight.data[dead] = new_w
+                self.ema_sum[s][dead] = new_w
+                self.ema_cluster_size[s][dead] = 1.0
+                self.last_assigned[s][dead] = new_w
+                self.usage_counts[s][dead] = 0.0
+            restarts[f'stage_{s}'] = int(n_dead)
+        return restarts
+
+    def get_diagnostics(self) -> dict:
+        """Per-stage utilization/perplexity/dead-codewords/usage-entropy.
+
+        Returns {'num_stages': S, 'stages': [ {stage, utilization, perplexity,
+        dead_codewords, entropy_bits}, ... ]}.
+        """
+        stages = []
+        for s in range(self.num_stages):
+            counts = self.usage_counts[s]
+            total = counts.sum().item()
+            if total <= 0:
+                stages.append({'stage': s, 'utilization': 0.0, 'perplexity': 0.0,
+                               'dead_codewords': int(self.num_embeddings_per_stage),
+                               'entropy_bits': 0.0})
+            else:
+                probs = counts / total
+                entropy_bits = -(probs * torch.log2(probs + 1e-10)).sum().item()
+                used_mask = counts > 0
+                stages.append({'stage': s,
+                               'utilization': used_mask.float().mean().item(),
+                               'perplexity': 2.0 ** entropy_bits,
+                               'dead_codewords': int(self.num_embeddings_per_stage - used_mask.sum().item()),
+                               'entropy_bits': entropy_bits})
+        return {'num_stages': self.num_stages, 'stages': stages}
+
+    def stage_logits(self, x: torch.Tensor):
+        """2026-09-18 (encoder-distillation, index-agreement loss): per-stage
+        NEGATIVE squared-distance logits, i.e. a differentiable classification
+        head over each stage's codebook -- for cross-entropy against an
+        externally supplied target index (e.g. a frozen teacher's own argmin),
+        rather than this module's own argmin. Side-effect-free (no EMA update,
+        no usage_counts/last_assigned mutation) so it is safe to call in
+        addition to a normal forward() on the same input.
+
+        Advances the residual using THIS call's own greedy argmin at each
+        stage (matching forward()'s natural trajectory), not the target's --
+        the actual inference-time objective is "does the student's own,
+        naturally-computed quantization path land on the teacher's index",
+        not a teacher-forced conditional. Gradients flow through the full
+        stage chain back into `x`.
+
+        Returns: list of `num_stages` tensors, each [N, num_embeddings_per_stage].
+        """
+        x_flat = x.reshape(-1, self.embedding_dim)
+        residual = x_flat
+        logits_per_stage = []
+        for cb in self.codebooks:
+            distances_sq = (torch.sum(residual**2, dim=1, keepdim=True) +
+                            torch.sum(cb.weight**2, dim=1) -
+                            2 * torch.matmul(residual, cb.weight.t()))
+            logits_per_stage.append(-distances_sq)
+            with torch.no_grad():
+                idx = torch.argmin(distances_sq, dim=1)
+            c = cb(idx)
+            residual = residual - c.detach()
+        return logits_per_stage
+
+    # ----------------------------------------------------------------- forward
+    def forward(self, x: torch.Tensor, return_per_token_loss: bool = False):
+        original_shape = x.shape
+        if x.numel() == 0:
+            return (torch.zeros_like(x), torch.tensor(0.0, device=x.device),
+                    torch.tensor(0.0, device=x.device),
+                    torch.tensor([], dtype=torch.long, device=x.device))
+
+        x_flat = x.view(-1, self.embedding_dim)
+        residual = x_flat
+        quantized_st = torch.zeros_like(x_flat)
+        per_token_loss = torch.zeros(x_flat.shape[0], device=x.device, dtype=x.dtype)
+        stage_indices = []
+        perplexities = []
+
+        for s, cb in enumerate(self.codebooks):
+            distances_sq = (torch.sum(residual**2, dim=1, keepdim=True) +
+                            torch.sum(cb.weight**2, dim=1) -
+                            2 * torch.matmul(residual, cb.weight.t()))
+            encoding_indices = torch.argmin(distances_sq, dim=1)
+            stage_indices.append(encoding_indices)
+            self.usage_counts[s] += torch.bincount(
+                encoding_indices, minlength=self.num_embeddings_per_stage).float()
+            self.last_assigned[s][encoding_indices] = residual.detach().to(self.last_assigned.dtype)
+
+            c = cb(encoding_indices)
+            codebook_loss = F.mse_loss(c, residual.detach(), reduction='none')
+            commitment_loss = F.mse_loss(residual, c.detach(), reduction='none')
+            # With EMA the codebook loss is replaced by the EMA update (no gradient
+            # should reach the embeddings -- they are requires_grad=False anyway);
+            # keep the commitment term so the encoder still receives its gradient.
+            if self.ema_decay > 0:
+                per_token_loss += (self.commitment_cost * commitment_loss).mean(-1)
+            else:
+                per_token_loss += (codebook_loss + self.commitment_cost * commitment_loss).mean(-1)
+
+            # EMA codebook update (RVQFIX, plan 7.2): standard VQ-VAE-2 running
+            # cluster-size/sum with Laplace smoothing; embeddings excluded from the
+            # optimizer, so no codebook-loss gradient competes with the EMA.
+            if self.ema_decay > 0 and self.training:
+                with torch.no_grad():
+                    one_hot = F.one_hot(encoding_indices, self.num_embeddings_per_stage).float()
+                    counts = one_hot.sum(0)
+                    # fp32 accumulation even under autocast (matmul in fp32 explicitly).
+                    feats_sum = one_hot.t() @ residual.detach().float()
+                    self.ema_cluster_size[s].mul_(self.ema_decay)
+                    self.ema_cluster_size[s].add_(counts, alpha=1.0 - self.ema_decay)
+                    self.ema_sum[s].mul_(self.ema_decay)
+                    self.ema_sum[s].add_(feats_sum, alpha=1.0 - self.ema_decay)
+                    total_n = self.ema_cluster_size[s].sum().clamp_min(1e-6)
+                    smoothed = (self.ema_cluster_size[s] + 1e-5) / \
+                        (total_n + self.num_embeddings_per_stage * 1e-5) * total_n
+                    new_w = self.ema_sum[s] / smoothed.clamp_min(1e-8).unsqueeze(1)
+                    cb.weight.data.copy_(new_w)
+
+            # STE per stage (HierarchicalQuantizer pattern: x + (quantized - x).detach()).
+            q_s = residual + (c - residual).detach()
+            quantized_st = quantized_st + q_s
+            residual = residual - c.detach()
+
+            encodings_one_hot = F.one_hot(encoding_indices, self.num_embeddings_per_stage).float()
+            avg_probs = torch.mean(encodings_one_hot, dim=0)
+            perplexities.append(torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10))))
+
+        perplexity = torch.stack(perplexities).mean()
+        packed_indices = self.pack_indices(stage_indices)
+
+        if return_per_token_loss:
+            return (quantized_st.view(original_shape), per_token_loss, perplexity, packed_indices)
+        return (quantized_st.view(original_shape), per_token_loss.mean(), perplexity, packed_indices)
+
+class Channels(nn.Module):
+    # ... (Keep the Channels class exactly as it was in the previous full code response) ...
+    def __init__(self): super().__init__()
+    def _get_noise_std(self, total_noise_variance: float) -> float: return math.sqrt(max(0.0, total_noise_variance))
+    def AWGN(self, Tx_sig: torch.Tensor, total_noise_variance: float) -> torch.Tensor:
+        device = Tx_sig.device; noise_std = self._get_noise_std(total_noise_variance)
+        if torch.is_complex(Tx_sig): noise_std_per_component = math.sqrt(max(0.0, total_noise_variance) / 2.0); noise = torch.normal(0, noise_std_per_component, size=Tx_sig.shape, device=device) + 1j * torch.normal(0, noise_std_per_component, size=Tx_sig.shape, device=device)
+        else: noise = torch.normal(0, noise_std, size=Tx_sig.shape, device=device)
+        return Tx_sig + noise
+    def _apply_flat_fading_channel(self, Tx_sig: torch.Tensor, H_complex: torch.Tensor, total_noise_variance: float) -> torch.Tensor:
+        is_input_real = not torch.is_complex(Tx_sig); original_shape = Tx_sig.shape; Tx_as_complex = Tx_sig
+        if is_input_real:
+            if Tx_sig.shape[-1] % 2 != 0: Tx_sig = F.pad(Tx_sig, (0,1)); Tx_as_complex = torch.complex(Tx_sig[...,:Tx_sig.shape[-1]//2], Tx_sig[...,Tx_sig.shape[-1]//2:]) # Pad if odd for complex conv
+            else: Tx_as_complex = torch.complex(Tx_sig[..., :Tx_sig.shape[-1]//2], Tx_sig[..., Tx_sig.shape[-1]//2:])
+        faded_signal = Tx_as_complex * H_complex
+        noise_std_per_component = math.sqrt(max(0.0, total_noise_variance) / 2.0)
+        noise = torch.normal(0, noise_std_per_component, faded_signal.shape, device=Tx_sig.device) + 1j * torch.normal(0, noise_std_per_component, faded_signal.shape, device=Tx_sig.device)
+        received_noisy_faded = faded_signal + noise
+        equalized_signal = received_noisy_faded / (H_complex + 1e-8)
+        Rx_sig_out = equalized_signal
+        if is_input_real: Rx_sig_out = torch.cat((equalized_signal.real, equalized_signal.imag), dim=-1)
+        return Rx_sig_out.view(original_shape) # Ensure original shape, esp if padding was done
+    def Rayleigh(self, Tx_sig: torch.Tensor, total_noise_variance: float) -> torch.Tensor:
+        B = Tx_sig.shape[0]; device = Tx_sig.device; H_real = torch.normal(0, math.sqrt(1/2), size=(B, 1, 1), device=device); H_imag = torch.normal(0, math.sqrt(1/2), size=(B, 1, 1), device=device)
+        H_complex = torch.complex(H_real, H_imag); return self._apply_flat_fading_channel(Tx_sig, H_complex, total_noise_variance)
+    def Rician(self, Tx_sig: torch.Tensor, total_noise_variance: float, K_factor: float = 1.0) -> torch.Tensor:
+        B = Tx_sig.shape[0]; device = Tx_sig.device; H_los_real = math.sqrt(K_factor / (K_factor + 1.0)); H_los_imag = 0.0
+        std_nlos_per_component = math.sqrt(1.0 / (2.0 * (K_factor + 1.0)))
+        H_nlos_real = torch.normal(0, std_nlos_per_component, size=(B, 1, 1), device=device); H_nlos_imag = torch.normal(0, std_nlos_per_component, size=(B, 1, 1), device=device) # Centered at 0
+        H_complex = torch.complex(H_los_real + H_nlos_real, H_los_imag + H_nlos_imag); return self._apply_flat_fading_channel(Tx_sig, H_complex, total_noise_variance)
+        
+        
+class FeatureImportanceTransformer(nn.Module):
+    def __init__(self,
+                 input_dim: int,
+                 fim_embed_dim: int,
+                 fim_depth: int,
+                 fim_num_heads: int,
+                 mlp_ratio: float = 2.0,
+                 norm_layer=nn.LayerNorm, # This comes from nn
+                 drop_rate: float = 0.1):
+        super().__init__()
+        self.input_dim = input_dim
+        self.fim_embed_dim = fim_embed_dim
+
+        if input_dim != fim_embed_dim:
+            self.input_proj = nn.Linear(input_dim, fim_embed_dim)
+        else:
+            self.input_proj = nn.Identity()
+
+        self.blocks = nn.ModuleList([
+            Block(dim=fim_embed_dim, num_heads=fim_num_heads, mlp_ratio=mlp_ratio,
+                  qkv_bias=True, norm_layer=norm_layer, # norm_layer is passed as arg
+                  drop=drop_rate, attn_drop=drop_rate)
+            for _ in range(fim_depth)
+        ])
+        self.norm = norm_layer(fim_embed_dim) # Use the passed norm_layer
+
+        self.output_head = nn.Sequential(
+            nn.Linear(fim_embed_dim, fim_embed_dim // 2),
+            nn.GELU(),
+            nn.Dropout(drop_rate),
+            nn.Linear(fim_embed_dim // 2, 1),
+            # nn.Sigmoid() cause error in training
+        )
+        self.apply(self._init_weights) # Assuming _init_weights is defined
+
+    def _init_weights(self, m): # Make sure this method exists or is inherited
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+            
+    def forward(self, x_encoder_tokens: torch.Tensor) -> torch.Tensor:
+        B, N, _ = x_encoder_tokens.shape
+        x = self.input_proj(x_encoder_tokens)
+        for blk in self.blocks:
+            x = blk(x)
+        x = self.norm(x)
+        importance_scores = self.output_head(x)
+        return importance_scores

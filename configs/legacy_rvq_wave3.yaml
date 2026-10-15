@@ -1,0 +1,95 @@
+# legacy_rvq_wave3.yaml — Wave-3 RVQ 3x6 model (the pre-RVQFIX 300-epoch run).
+# This is the model behind the honest 27.3% / 47.2% retention numbers (wave-4
+# METRIC) and the R3 #4 RVQ-vs-flat comparison. Predates RVQFIX (no k-means /
+# EMA / dead-restart) and predates augmentation. Stage-1 collapse (8/64 codes,
+# entropy ~2.2 bits) is the H1 evidence.
+name: legacy_rvq_wave3
+role: "Wave-3 RVQ 3x6 + 2-bit low, 300 epochs, no-aug, pre-RVQFIX"
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_RVQ
+  best_psnr: checkpoint-best_psnr.pth   # epoch 19
+  best_psnr_epoch: 19
+  best_psnr_sha256: 755a027b9b2e22241642ab4809e6d0e152547a7be2d390c69b7f40fcc469e096
+  sha256_source: reports/wave4_diag.md (cross-checked by checkpoints_sha256.txt)
+  note: >
+    Best val PSNR 25.76 dB @ E19 (train_rvq_full.log:45069-45070). Stage-1 util
+    0.156 @ E30, ~0.36 at end, entropy ~2.2 bits — the H1 collapse evidence.
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  patch_size: 8
+  encoder_embed_dim: 512
+  encoder_depth: 8
+  encoder_num_heads: 8
+  decoder_embed_dim: 512
+  decoder_depth: 6
+  decoder_num_heads: 8
+  fim_embed_dim: 256
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 512
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 2
+  fim_routing_threshold: 0.6   # Wave-3 default at the time (log:6)
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  yolo_weights: best.pt
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  # RVQFIX flags did not exist yet (introduced wave-4):
+  rvq_kmeans_init: false   # n/a — predates the flag
+  rvq_ema_decay: 0.0       # no EMA in Wave-3
+  rvq_restart_threshold: 0.0
+  no_augment: true         # augmentation introduced wave-4
+
+training_command: >
+  # Reconstructed from train_rvq_full.log kwargs (log:6-8). The RVQFIX flags
+  # (--rvq_kmeans_init / --rvq_ema_decay / --rvq_restart_threshold) did not
+  # exist in the Wave-3 codebase; fim_routing_threshold defaulted to 0.6.
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_RVQ
+  --data_set fish --data_path ../yolo_fish_dataset_root/ --num_object_classes 1
+  --batch_size 2 --input_size 224 --patch_size 8 --encoder_embed_dim 512
+  --encoder_depth 8 --encoder_num_heads 8 --decoder_embed_dim 512 --decoder_depth 6
+  --decoder_num_heads 8 --fim_embed_dim 256 --fim_depth 2 --fim_num_heads 4
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 2
+  --routing_topk 63 --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300
+  --opt adamw --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_weights best.pt --yolo_conf_thres 0.4 --yolo_iou_thres 0.5
+  --inside_box_loss_weight 10 --outside_box_loss_weight 0.1 --seed 42
+
+provenance:
+  log: __AQUASC_ROOT__/train_rvq_full.log
+  reports: __AQUASC_TMP__/rvq_report.md, reports/wave4_metric.md, reports/wave6_sweep.md
+  best_val_psnr: 25.76   # @ epoch 19
+  note: "11h17m wall time."

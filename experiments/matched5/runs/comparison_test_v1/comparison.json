@@ -1,0 +1,59 @@
+{
+  "split": "test",
+  "snr_db": 5.0,
+  "symbols_per_image": 6144,
+  "channel_uses_per_px": 0.12244897959183673,
+  "n": 432,
+  "M": 10,
+  "aquasc_mean_per_image_ap50": 0.6956192851066589,
+  "roijscc_mean_per_image_ap50": 0.6348150968551636,
+  "aquasc_pooled_map50": 0.6404675960540771,
+  "roijscc_pooled_map50": 0.5763720452785492,
+  "pooled_difference": 0.06409555077552787,
+  "paired_per_image_bootstrap": {
+    "mean_diff": 0.06080423568858317,
+    "mean_a": 0.6956192941525606,
+    "mean_b": 0.6348150584639775,
+    "ci_low": 0.04532244805919213,
+    "ci_high": 0.0765515186817437,
+    "n_boot": 10000,
+    "p_value": 0.0,
+    "alpha": 0.05,
+    "seed": 42
+  },
+  "wilcoxon": {
+    "n": 432,
+    "n_nonzero": 407,
+    "n_zero": 25,
+    "statistic": 25022.5,
+    "p_value": 3.789818171950466e-12,
+    "alternative": "two-sided"
+  },
+  "per_realization_mean_ap_differences": [
+    0.0631323754787445,
+    0.05557935684919357,
+    0.05423077940940857,
+    0.06376077979803085,
+    0.05246910825371742,
+    0.058796029537916183,
+    0.06629165261983871,
+    0.06350096315145493,
+    0.055900294333696365,
+    0.07438108325004578
+  ],
+  "meets_preregistered_win": true,
+  "aquasc_metrics_sha256": "74deca3999b2d721de904e82616526ff3b953611a0427220dcbdac28bef766ee",
+  "roi_metrics_sha256": "d02fbaeabcb76787c70a2e3c56623803a239f30238cfd2bd550a371bc8464a93",
+  "limitations": [
+    "one training seed per model",
+    "Site A only",
+    "AquaSC 300 training epochs versus ROI-JSCC 100",
+    "ROI-JSCC granted its original ground-truth ROI protocol",
+    "CI resamples images, not independent videos or training seeds"
+  ],
+  "released_roi_reproduction": {
+    "prior_mean": 0.6348150968551636,
+    "new_mean": 0.6348150968551636,
+    "max_abs_per_image_mean_difference": 1.1920928955078125e-07
+  }
+}

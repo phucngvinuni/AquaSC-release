@@ -1,0 +1,9 @@
+{
+  "split": "test",
+  "site": "b",
+  "checkpoint": "__AQUASC_ROOT__/ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_FINAL/checkpoint-best_psnr.pth",
+  "checkpoint_sha256": "b1d2eb25419af6ed6703a4aa886eb7143a8f1f350bd50e3371dacb3cde9e2894",
+  "n": 455,
+  "decoder_parity_max_abs_error": 1.1920928955078125e-07,
+  "contents": "source encoder output only; not channel evaluation"
+}

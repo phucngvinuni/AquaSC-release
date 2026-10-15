@@ -1,0 +1,81 @@
+{
+  "provenance": {
+    "site": "A",
+    "variant": "std",
+    "c": 2,
+    "checkpoint": "/tmp/claude-1000/jscc_l1_eval_root/std_c2_snr10_ratio0.0833/checkpoints/best_psnr.pkl",
+    "uses_per_px": 0.125,
+    "per_image_ceiling": 0.7743,
+    "pooled_ceiling": 0.7292211,
+    "conf_thres": 0.001,
+    "channel_replay_method": "direct encoder()/decoder() calls + a standalone reimplementation of channel.py's Rayleigh math (h, AWGN from the seeded bank instead of internal torch.randn) -- model.forward()/channel_layer are not used for this measurement."
+  },
+  "by_snr": {
+    "-5.0": {
+      "mean_per_image_ap50": 0.060552503913640976,
+      "ci_low": 0.053973375311694265,
+      "ci_high": 0.0674188673080843,
+      "retention_per_image": 0.0782028979899793,
+      "pooled_map50": 0.015744257345795633,
+      "retention_pooled": 0.021590512597339316,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snrm5.npy"
+    },
+    "0.0": {
+      "mean_per_image_ap50": 0.07117676734924316,
+      "ci_low": 0.06318627622379407,
+      "ci_high": 0.0794217321484582,
+      "retention_per_image": 0.09192401827359313,
+      "pooled_map50": 0.028007462993264197,
+      "retention_pooled": 0.03840736779731716,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snr0.npy"
+    },
+    "5.0": {
+      "mean_per_image_ap50": 0.07768350839614868,
+      "ci_low": 0.06862089179298385,
+      "ci_high": 0.08723657850262127,
+      "retention_per_image": 0.10032740332706791,
+      "pooled_map50": 0.04033769927918911,
+      "retention_pooled": 0.05531614386801083,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snr5.npy"
+    },
+    "10.0": {
+      "mean_per_image_ap50": 0.08214941620826721,
+      "ci_low": 0.07244963241223391,
+      "ci_high": 0.09237201605444877,
+      "retention_per_image": 0.10609507452959734,
+      "pooled_map50": 0.044643668457865715,
+      "retention_pooled": 0.06122103221898779,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snr10.npy"
+    },
+    "15.0": {
+      "mean_per_image_ap50": 0.08415193855762482,
+      "ci_low": 0.07408860617839241,
+      "ci_high": 0.09500607300745591,
+      "retention_per_image": 0.1086813102901005,
+      "pooled_map50": 0.047535260766744615,
+      "retention_pooled": 0.06518634851178143,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snr15.npy"
+    },
+    "20.0": {
+      "mean_per_image_ap50": 0.08498048037290573,
+      "ci_low": 0.07472914616220334,
+      "ci_high": 0.09592491479022135,
+      "retention_per_image": 0.10975136300259038,
+      "pooled_map50": 0.050368808954954145,
+      "retention_pooled": 0.06907206738114702,
+      "in_bank": true,
+      "M": 10,
+      "out_path": "/tmp/claude-1000/jscc_l1_perimage/jsccnn_std_c2_snr20.npy"
+    }
+  }
+}

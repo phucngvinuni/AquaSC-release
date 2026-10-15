@@ -1,0 +1,89 @@
+# legacy_combined.yaml — Wave-6 SWEEP flagship (RVQFIX-EMA + augmentation).
+# The "combined best" model that Wave-6 attempted: RVQFIX EMA/k-means/dead-restart
+# quantizer + P0-4 augmentation, 18/2, 300 epochs. Its detection collapsed
+# (mAP 0.014 @10 dB vs RVQ 0.199), the finding that forced the paper onto the
+# no-aug models (RUN-1/2/3). Kept for the augmentation-collapse ablation.
+name: legacy_combined
+role: "Wave-6 SWEEP flagship (EMA + augmentation), 300 epochs"
+
+seed: 42
+
+checkpoint:
+  output_dir: ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_COMBINED
+  best_psnr: checkpoint-best_psnr.pth   # epoch 169
+  best_psnr_epoch: 169
+  best_psnr_sha256: d218ed1eed36c761b31fb65a1ca6964bfd42c517ed84de1afa7de4efd39379f3
+  sha256_source: reports/wave6_sweep.md (cross-checked by checkpoints_sha256.txt)
+
+flags:
+  model: ViT_Reconstruction_Model_Default
+  data_set: fish
+  data_path: ../yolo_fish_dataset_root/
+  num_object_classes: 1
+  batch_size: 2
+  input_size: 224
+  patch_size: 8
+  encoder_embed_dim: 512
+  encoder_depth: 8
+  encoder_num_heads: 8
+  decoder_embed_dim: 512
+  decoder_depth: 6
+  decoder_num_heads: 8
+  fim_embed_dim: 256
+  fim_depth: 2
+  fim_num_heads: 4
+  quantizer_dim: 512
+  quantizer_type: rvq
+  rvq_stages: 3
+  rvq_bits_per_stage: 6
+  bits_vq_high: 10      # ignored for rvq
+  bits_vq_low: 2
+  # RVQFIX defaults ON (kmeans init + EMA 0.99 + dead-restart 1.0)
+  rvq_kmeans_init: true
+  rvq_ema_decay: 0.99
+  rvq_restart_threshold: 1.0
+  fim_routing_threshold: 0.7
+  routing_topk: 63
+  eps_stab: 1.0e-6
+  lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 20
+  epochs: 300
+  opt: adamw
+  weight_decay: 0.05
+  clip_grad: 1.0
+  save_freq: 10
+  save_ckpt: true
+  snr_db_train_min: 0
+  snr_db_train_max: 20
+  snr_db_eval: 10
+  fim_loss_weight: 0.5
+  vq_loss_weight: 0.15
+  lpips_loss_weight: 0
+  inside_box_loss_weight: 10
+  outside_box_loss_weight: 0.1
+  yolo_weights: best.pt
+  yolo_conf_thres: 0.4
+  yolo_iou_thres: 0.5
+  no_augment: false     # augmentation ON (unconditional in datasets.py at the time)
+
+training_command: >
+  python3 run_class_main.py --model ViT_Reconstruction_Model_Default
+  --output_dir ckpt_semcom_reconstruction_yolo_fish_MIMO_LPIPS_COMBINED
+  --data_set fish --data_path ../yolo_fish_dataset_root/ --num_object_classes 1
+  --batch_size 2 --input_size 224 --patch_size 8 --encoder_embed_dim 512
+  --encoder_depth 8 --encoder_num_heads 8 --decoder_embed_dim 512 --decoder_depth 6
+  --decoder_num_heads 8 --fim_embed_dim 256 --fim_depth 2 --fim_num_heads 4
+  --quantizer_type rvq --rvq_stages 3 --rvq_bits_per_stage 6 --bits_vq_low 2
+  --routing_topk 63 --lr 1e-4 --min_lr 1e-5 --warmup_epochs 20 --epochs 300
+  --opt adamw --weight_decay 0.05 --clip_grad 1.0 --save_freq 10 --save_ckpt
+  --snr_db_train_min 0 --snr_db_train_max 20 --snr_db_eval 10
+  --fim_loss_weight 0.5 --vq_loss_weight 0.15 --lpips_loss_weight 0
+  --yolo_conf_thres 0.4 --yolo_iou_thres 0.5 --inside_box_loss_weight 10
+  --outside_box_loss_weight 0.1 --seed 42
+
+provenance:
+  log: __AQUASC_DATA__/logs/train_combined.log
+  report: reports/wave6_sweep.md
+  best_val_psnr: 23.36   # @ epoch 169
+  note: "19h42m wall time. Augmentation collapsed detection 14x -> abandoned for final."
