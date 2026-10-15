@@ -19,7 +19,7 @@ Raw data are **not redistributed** in this repository. What is shipped: split ma
 <DATA_ROOT>/yolo_fish_dataset_root/{train,valid,test}/{images,labels}      # Site A
 <DATA_ROOT>/yolo_fishdet_nb2_vd/{train,valid,test}/{images,labels}         # Site B
 ```
-* Rebuild Site A from the raw archive with `splits.py` (it applies the video-disjoint manifest). **Do not re-split randomly**: a random frame split leaks near-duplicate frames between train and test (42.7 % of test frames; `splits/leakage_stats_*.json`).
+* Rebuild Site A from the raw archive with `data_tools/splits.py` (it applies the video-disjoint manifest). **Do not re-split randomly**: a random frame split leaks near-duplicate frames between train and test (42.7 % of test frames; `splits/leakage_stats_*.json`).
 
 ## Split lists shipped here
 | File | Content |
@@ -29,4 +29,4 @@ Raw data are **not redistributed** in this repository. What is shipped: split ma
 | `splits/manifest.json` | Site A video-disjoint manifest (seed 42, ratios 0.8/0.1/0.1) used by every reported number; `splits/manifest_801010.json`, `splits/manifest_groupkfold5.json`: alternative manifests |
 | `artifacts/splits/siteb_manifest.json` | Site B manifest (21 videos, split counts) |
 | `splits/leakage_stats_{random,video_disjoint}.json` | leakage audit of the random vs. video-disjoint split |
-| `channel_bank.py`, `gen_channel_bank.py` | seeded Rayleigh `h` and noise bank (see `artifacts/README.md`) |
+| `channel_bank.py`, `data_tools/gen_channel_bank.py` | seeded Rayleigh `h` and noise bank (see `artifacts/README.md`) |

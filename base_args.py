@@ -179,7 +179,7 @@ def get_args():
                         help='[plan 5.4] training-time index-noise: flip index bits at the measured '
                              'digital error rate (BLER) while keeping the analog proxy.')
     parser.add_argument('--index_flip_csv', default=None, type=str,
-                        help='CSV with (snr_db, bler) columns for the index-flip rate (default blers_vs_snr.csv).')
+                        help='CSV with (snr_db, bler) columns for the index-flip rate (default results/eval/blers_vs_snr.csv).')
     parser.add_argument('--train_channel_mode', default='analog', choices=['analog', 'digital_uncoded', 'erasure'], type=str,
                         help='[plan 16.9 Track E] Training-time channel. analog (default, unchanged): '
                              'continuous Rayleigh proxy on the codeword vectors. digital_uncoded (E1): '
@@ -192,7 +192,7 @@ def get_args():
                              'Mutually exclusive with --index_flip (ignored unless mode=analog).')
     parser.add_argument('--erasure_bler_csv', default=None, type=str,
                         help='CSV with (snr_db, bler) columns for --train_channel_mode erasure '
-                             '(default: e2_bler_train.csv, the Track E measured coded-chain BLER curve).')
+                             '(default: results/eval/e2_bler_train.csv, the Track E measured coded-chain BLER curve).')
     parser.add_argument('--finetune_reset', action='store_true',
                         help='After --resume, reset start_epoch to 0 and rebuild a fresh optimizer/'
                              'scaler for a short fine-tune run.')

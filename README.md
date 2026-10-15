@@ -41,35 +41,52 @@ Full table with inputs and verification status: `docs/RESULT_MAP.md`. Configs an
 
 | Paper item | Config / checkpoint | Command |
 |---|---|---|
-| Headline SNR sweep and CIs (high rate) | `configs/final_18_2.yaml`; `flagship_r122_best_psnr` | `bash scripts/eval_coded.sh high` ; figure: `plot_f6_headline.py`, `plot_f3_jointframe_ceiling.py` |
-| Three rates (rate-Pareto) | `configs/generated/codec_r061_best_map.yaml`, `codec_r030_best_map.yaml` | `bash scripts/eval_coded.sh mid` / `low`; figure: `plot_f5_rate_pareto.py` |
-| Ablations and routing controls | `configs/generated/ablation_*.yaml` | `bash experiments/matched5/run_ablation_routing_coded.sh`; figure: `plot_wave14_manuscript_figures.py --figs ablation,routing_pr` |
+| Headline SNR sweep and CIs (high rate) | `configs/final_18_2.yaml`; `flagship_r122_best_psnr` | `bash scripts/eval_coded.sh high` ; figure: `plotting/plot_f6_headline.py`, `plotting/plot_f3_jointframe_ceiling.py` |
+| Three rates (rate-Pareto) | `configs/generated/codec_r061_best_map.yaml`, `codec_r030_best_map.yaml` | `bash scripts/eval_coded.sh mid` / `low`; figure: `plotting/plot_f5_rate_pareto.py` |
+| Ablations and routing controls | `configs/generated/ablation_*.yaml` | `bash experiments/matched5/run_ablation_routing_coded.sh`; figure: `plotting/plot_wave14_manuscript_figures.py --figs ablation,routing_pr` |
 | K sensitivity | headline checkpoint | `experiments/matched5/run_k_sweep_{valid,test}.sh` |
 | Small / Tiny | `configs/generated/{small,tiny}_*.yaml` | `experiments/matched5/run_stage1_vs_stage2_coded.sh` |
-| Site B adaptation | `configs/generated/siteB_*.yaml` | `experiments/matched5/run_s4_siteb_*.sh`; figure: `plot_f9_siteb.py` |
+| Site B adaptation | `configs/generated/siteB_*.yaml` | `experiments/matched5/run_s4_siteb_*.sh`; figure: `plotting/plot_f9_siteb.py` |
 | WebP / JPEG at equal channel uses | `webp_jpeg_matched/runs/*/config.json` | `bash scripts/run_webp_jpeg_matched.sh` (results: `webp_jpeg_matched/RESULTS_matched_budget.md`) |
 | SwinJSCC, JSCC-CNN, ROI-JSCC | `baselines/README.md` | `bash scripts/setup_baselines.sh` |
-| Frame format / CRC / routing cardinality / transmitted symbols | — | `python test_bitstream.py`, `verification/s1/roundtrip_check.py`; `summary.json` records `symbols_per_image` / `info_bits` / `coded_bits` for every run; the WebP/JPEG rerun asserts the emitted symbol count for every record |
+| Frame format / CRC / routing cardinality / transmitted symbols | — | `python tests/test_bitstream.py`, `verification/s1/roundtrip_check.py`; `summary.json` records `symbols_per_image` / `info_bits` / `coded_bits` for every run; the WebP/JPEG rerun asserts the emitted symbol count for every record |
 | Latency on Raspberry Pi 4B, network, server | `artifacts/results/timing/` | `docs/TIMING.md`, `experiments/edge_bench/` |
-| Paired bootstrap / pooled mAP / mean per-image AP / mask-seed variability | — | `stats.py`, `stats_analyze.py`; `python verification/s3_s7/s3_recompute.py` |
+| Paired bootstrap / pooled mAP / mean per-image AP / mask-seed variability | — | `stats.py`, `analysis/stats_analyze.py`; `python verification/s3_s7/s3_recompute.py` |
 
 ## 6. Statistics protocol
 Per-image AP50 is averaged over the 10 channel draws; differences between methods use a **paired bootstrap over the 432 test images** (10,000 resamples, seed 42, percentile 95 % interval, `stats.paired_bootstrap`). Pooled mAP@0.5 is computed per draw over all images and reported as mean +- std over the 10 draws.
 The random-router control is repeated over mask seeds (`experiments/matched5/run_random_router_multiseed.sh`). Intervals are conditional on the released checkpoints and the test split: they do not include training-seed or video-level variability (one training seed per model).
 
-## 7. Code map
+## 7. Repository layout and code map
+The root keeps the core library modules (they import each other by name); everything else lives in a folder.
+```
+model.py model_util.py engine1.py run_class_main.py base_args.py ...   core model / training / transport modules (table below)
+analysis/      routing, transfer, codec and statistics analysis scripts
+plotting/      figure scripts (plot_*.py, plotting/reproduce_figures.py)
+tests/         unit tests (statistics, routing controls, bitstream, LDPC chain)
+training/      detector, distillation and FIM-shrink training scripts
+data_tools/    split building, channel-bank generation, leakage audit
+drivers/       shell drivers of the older (uncoded / proxy) sweeps, kept as provenance of the CSV files in results/
+scripts/       one-command entry points: demo, coded evaluation, figures, baselines, path binding
+experiments/   matched5 (coded evaluation pipeline), edge_bench (Raspberry Pi and network timing)
+webp_jpeg_matched/  equal-channel-use WebP/JPEG baselines     baselines/  third-party baselines (overlay + setup)
+configs/ requirements/ docs/ artifacts/ verification/ splits/    configs, environments, documentation, manifests, audits, split manifests
+results/       CSV / JSON / NPZ result files read by the plotting and analysis scripts (grouped by topic);  f1_perimage/  per-image AP arrays
+```
+Run every script from the repository root, e.g. `python plotting/plot_f6_headline.py`.
+
 | Area | Files |
 |---|---|
 | Model: ViT encoder/decoder, FIM, projection, residual/hierarchical VQ, channel proxy | `model.py`, `model_util.py` (`ViTEncoder_Van`, `FeatureImportanceTransformer`, `ResidualQuantizer`, `HierarchicalQuantizer`, `ViTDecoder_ImageReconstruction`, `Channels`) |
 | Losses and train/eval loops (reconstruction with bounding-box weighting, LPIPS, VQ codebook/commitment, FIM) | `engine1.py`, `run_class_main.py`, `base_args.py` |
-| Training: AquaSC, ablations (`--disable_fim`, `--disable_bbw`), distillation (Small/Tiny), FIM shrink, detector | `run_class_main.py`, `train_distill_transmitter_only.py`, `train_fim_shrink.py`, `train_detector.py`, `configs/` |
-| Datasets / preprocessing / splits | `datasets.py`, `dataset_folder.py`, `splits.py`, `splits/`, `build_combined_root.py` |
-| Transport: serializer/parser, header, routing mask, CRC, LDPC, modulation, channel, demapper, decoder | `bitstream.py`, `digital_pipeline.py`, `digital_bridge.py`, `digital_client.py`, `digital_channel.py`, `channel.py`, `channel_bank.py`, `gen_channel_bank.py`, `experiments/matched5/phy.py` |
-| Evaluation (coded) | `experiments/matched5/{evaluate,protocol,phy}.py`, `metrics.py`, `fim_metrics.py`, `routing_eval.py`, `routing_baselines.py`, `routing_pr_topk.py` |
-| Baselines | `baselines/`, `webp_jpeg_matched/`, `codec_baseline.py`, `codec_jpeg_eval.py` |
-| Statistics | `stats.py`, `stats_analyze.py`, `stats_eval_bank.py`, `stats_eval_jscc.py` |
-| Plotting | `plot_*.py`, `plot_style.py`, `reproduce_figures.py` |
-| Tests / checks | `test_*.py`, `verification/` |
+| Training: AquaSC, ablations (`--disable_fim`, `--disable_bbw`), distillation (Small/Tiny), FIM shrink, detector | `run_class_main.py`, `training/train_distill_transmitter_only.py`, `training/train_fim_shrink.py`, `training/train_detector.py`, `configs/` |
+| Datasets / preprocessing / splits | `datasets.py`, `dataset_folder.py`, `data_tools/splits.py`, `splits/`, `data_tools/build_combined_root.py` |
+| Transport: serializer/parser, header, routing mask, CRC, LDPC, modulation, channel, demapper, decoder | `bitstream.py`, `digital_pipeline.py`, `digital_bridge.py`, `digital_client.py`, `digital_channel.py`, `channel.py`, `channel_bank.py`, `data_tools/gen_channel_bank.py`, `experiments/matched5/phy.py` |
+| Evaluation (coded) | `experiments/matched5/{evaluate,protocol,phy}.py`, `metrics.py`, `fim_metrics.py`, `analysis/routing_eval.py`, `routing_baselines.py`, `analysis/routing_pr_topk.py` |
+| Baselines | `baselines/`, `webp_jpeg_matched/`, `analysis/codec_baseline.py`, `analysis/codec_jpeg_eval.py` |
+| Statistics | `stats.py`, `analysis/stats_analyze.py`, `analysis/stats_eval_bank.py`, `analysis/stats_eval_jscc.py` |
+| Plotting | `plotting/` (`plot_*.py`, `plotting/plot_style.py`, `plotting/reproduce_figures.py`) |
+| Tests / checks | `tests/`, `verification/` |
 
 Frame-loss handling: a frame with a failed CRC-32 (header + mask + indices) produces an all-zero latent for the decoder; per-stage index partitioning, the 152-bit header and the enumerative mask encoding are defined in `bitstream.py`.
 

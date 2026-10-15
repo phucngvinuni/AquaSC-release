@@ -16,7 +16,7 @@
 # Usage:
 #   python fim_metrics.py --checkpoint <ckpt> --data_path <root> \
 #       --detector best.pt --device cpu --snr 10 \
-#       --out_csv fim_classification.csv --sweep_csv fim_tau_sweep.csv \
+#       --out_csv results/fim/fim_classification.csv --sweep_csv results/fim/fim_tau_sweep.csv \
 #       --hist_png __AQUASC_DATA__/figs/fim_histograms.png
 import argparse
 import csv

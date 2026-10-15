@@ -9,7 +9,7 @@ Run from AquaSC-D2DB/ so `import metrics` / `import channel_bank` resolve to the
 AquaSC harness. This script lives in competitors/ROI-JSCC/.
 
 Channel: BlockRayleighChannel driven by bank.get_h() / bank.get_noise_real()
-(block-fading Rayleigh + equalization, matching stats_eval_jscc.py / AquaSC).
+(block-fading Rayleigh + equalization, matching analysis/stats_eval_jscc.py / AquaSC).
 
 Image order = sorted test filenames = bank.image_names (asserted).
 

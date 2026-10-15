@@ -51,7 +51,7 @@ for entry in "${CONFIGS[@]}"; do
     $PY baselinea_reconstruct.py --checkpoint "$CKPTFILE" --c "$c" --snr "$snr" \
       --channel Rayleigh --input_dir "$TEST_IMG" --output_dir "$RECON" >> "$LOGS/baselinea_eval.log" 2>&1
     cd "$AQ"
-    $PY baselinea_score.py --yolo "$YOLO" --orig_dir "$TEST_IMG" --recon_dir "$RECON" \
+    $PY analysis/baselinea_score.py --yolo "$YOLO" --orig_dir "$TEST_IMG" --recon_dir "$RECON" \
       --label_dir "$TEST_LBL" --conf 0.001 --out_csv "$RECON/score.csv" \
       --batch_size 16 > "$RECON/score.stdout" 2>&1
     # append a row to the master CSV from the score JSON

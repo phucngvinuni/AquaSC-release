@@ -709,7 +709,7 @@ def conceal_tokens(tokens: List[Optional[int]], n_tokens: int = N_TOKENS,
     all tokens are erased the grid is filled with 0. Row-major token order:
     token t -> grid (t // grid_w, t % grid_w). Defaults to 28x28 (patch-8,
     784 tokens); pass grid_h=grid_w=14 for patch-16 (196 tokens) — see
-    test_digital_pipeline.py:test_patch16_n_tokens for the regression check.
+    tests/test_digital_pipeline.py:test_patch16_n_tokens for the regression check.
     """
     grid = np.full((grid_h, grid_w), np.nan, dtype=np.float64)
     for t in range(n_tokens):

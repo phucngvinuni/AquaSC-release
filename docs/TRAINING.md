@@ -32,7 +32,7 @@ Notes:
   (`args.seed + epoch*100003 + data_iter_step`) is derived from the training
   step counter, not from a batch-size-invariant global sample index (unlike the
   eval-time seed in `engine1.py`, fixed in plan v7.4 after a real defect was
-  found in `transfer_eval.py` — see the internal audit notes of the revision). This
+  found in `analysis/transfer_eval.py` — see the internal audit notes of the revision). This
   does not bias any *reported* number (it only governs stochastic training-time
   channel augmentation), but it does mean **training with a different
   `--batch_size` than the released config gives each training example a

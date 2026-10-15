@@ -12,7 +12,7 @@ channels:
 #
 #   python -m venv /path/to/venv-sionna
 #   /path/to/venv-sionna/bin/pip install sionna    # -> sionna 1.2.2 + tensorflow 2.21 + numpy 2.2.6 + scipy
-#   /path/to/venv-sionna/bin/python test_digital_pipeline.py
+#   /path/to/venv-sionna/bin/python tests/test_digital_pipeline.py
 #
 # The eval loop talks to that venv over a subprocess bridge
 # (digital_client.py <-> digital_bridge.py); point --digital_bridge_python at it
@@ -33,7 +33,7 @@ dependencies:
   - cython
   - tqdm
   - matplotlib
-  - pillow            # PIL (datasets.py / codec_baseline.py / baselinea_score.py)
+  - pillow            # PIL (datasets.py / analysis/codec_baseline.py / analysis/baselinea_score.py)
   - scipy             # stats.py (statistical protocol; has a pure-numpy fallback)
 
   - pip:
@@ -45,4 +45,4 @@ dependencies:
     - einops           # only required by the ROI-JSCC competitor, not AquaSC itself
     - pytorch-msssim
     - torch_optimizer
-    - imagehash        # quantify_leakage.py (leakage analysis, optional)
+    - imagehash        # data_tools/quantify_leakage.py (leakage analysis, optional)

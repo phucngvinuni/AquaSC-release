@@ -12,3 +12,5 @@ python -m venv venv-sionna && venv-sionna/bin/pip install -r requirements/sionna
 TensorFlow 2.21 needs NumPy >= 1.26, torch 2.1.2 needs NumPy < 1.26: this is why the LDPC chain lives in its own venv and the torch
 process talks to it through a JSON-lines subprocess bridge (`digital_client.py` / `digital_bridge.py`) or through the two-phase files of `experiments/matched5/`.
 ROI-JSCC additionally needs `einops` (torch env). `pip freeze` of the torch env is not pinned beyond `torch-env.yml`.
+
+Optional: `data_tools/quantify_leakage.py` (near-duplicate leakage audit of a split) additionally needs `imagehash`.

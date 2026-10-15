@@ -6,7 +6,7 @@ All timing files are in `artifacts/results/timing/`. Edge numbers come from a Ra
 * Timed region: encoder forward only (`img_encoder` -> FIM -> top-K routing -> RVQ quantisers). **Not timed**: bitstream packing, header/mask rank, CRC-32, LDPC, modulation.
 * PyTorch eager, batch 1, 224x224, 20 warm-up + 200 timed calls, mean +- std. AquaSC encoders use trained weights; JSCC-CNN / SwinJSCC / ROI-JSCC were timed with randomly initialised weights at their deployed architecture (latency depends only on shapes).
 * Parity of the standalone encoder wrappers against the full model was verified before shipping them to the Pi (`experiments/edge_bench/extract_edge_weights.py`).
-* Reference numbers for the other devices/runtimes: `edge_onnx_latency.csv`, `edge_complexity.csv`.
+* Reference numbers for the other devices/runtimes: `results/edge/edge_onnx_latency.csv`, `results/edge/edge_complexity.csv`.
 
 ## Network and server (`network_transfer.csv`)
 * Pi -> desktop: `scp` over one persistent `ssh -M` connection through a real Tailscale link (two WiFi networks), 20 trials. This measurement was run interactively and is **not scripted**; only 384 B and 6421 B payloads were timed.

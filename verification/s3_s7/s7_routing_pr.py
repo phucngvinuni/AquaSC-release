@@ -1,5 +1,5 @@
 """S7: precision/recall of routing controls (oracle_box, uniform, random seeds 42-46) offline,
-same protocol as routing_pr_topk.py (oracle_binary positives, PS=8, NP=784, 224x224, K=63,
+same protocol as analysis/routing_pr_topk.py (oracle_binary positives, PS=8, NP=784, 224x224, K=63,
 precision=hit/K over all images, recall=hit/n_pos over images with n_pos>0, t-CI via stats.t_confidence_interval).
 Also cross-checks computed masks against the masks ACTUALLY used in the coded runs (cache_*/source.npz high_mask)."""
 import sys, os, json
@@ -65,7 +65,7 @@ for s in (42, 43, 44, 45, 46):
 rp, rr = np.array(rp), np.array(rr)
 P(f"random 5 seeds: precision mean={rp.mean():.4f} std={rp.std(ddof=1):.4f}; recall mean={rr.mean():.4f} std={rr.std(ddof=1):.4f}")
 # reference rows from saved npz
-for f, lab in (("routing_pr_topk63_result.npz", "FIM (saved npz)"), ("routing_pr_segdet_topk63_result.npz", "detector_heatmap (saved npz)")):
+for f, lab in (("results/routing/routing_pr_topk63_result.npz", "FIM (saved npz)"), ("results/routing/routing_pr_segdet_topk63_result.npz", "detector_heatmap (saved npz)")):
     d = np.load("__AQUASC_ROOT__/" + f, allow_pickle=True)
     pc, rc = stats.t_confidence_interval(d["precisions"]), stats.t_confidence_interval(d["recalls"])
     P(f"{lab:28s} prec {pc['mean']:.4f} [{pc['ci_low']:.4f},{pc['ci_high']:.4f}]  rec {rc['mean']:.4f} [{rc['ci_low']:.4f},{rc['ci_high']:.4f}]  n={len(d['precisions'])} recall n={len(d['recalls'])} n_no_positive={int(d['n_no_positive'])}")

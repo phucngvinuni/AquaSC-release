@@ -26,7 +26,7 @@ see ``reports/wave4_gate.md`` and the Wave-4 CHANNEL report):
        segment B (rate 1/2): STAGE2 | STAGE3 | LOW | PAYLOAD_CRC-32
 
    ``digital_pipeline.py`` still emits the per-token 18-bit field; the cross-check
-   (test_bitstream.py) verifies that header/mask/CRC/padding are bit-identical and
+   (tests/test_bitstream.py) verifies that header/mask/CRC/padding are bit-identical and
    that the index field is a pure permutation (per-token -> per-stage).
 
 Layout (18/2b config, K=63, n_tokens=784, b_high=18 as 3x6, b_low=2)::
@@ -354,7 +354,7 @@ def unpack_rvq_indices(payload_bits: np.ndarray, high_mask: np.ndarray,
 # Generalized N-stage RVQ packing (plan v5.9 J3/E-7: L2 uses 4 stages x 6 bits
 # + 4-bit low, which the fixed 3-stage functions above cannot represent).
 # These are separate functions, not a rewrite of the 3-stage path above, so
-# the already-verified 18/2b behavior (test_bitstream.py) is untouched.
+# the already-verified 18/2b behavior (tests/test_bitstream.py) is untouched.
 # --------------------------------------------------------------------------
 def split_high_value_n(value: int, n_stages: int, stage_bits: int) -> Tuple[int, ...]:
     """Generalized split_high_value: MSB-first, stage 1 = highest-order bits.

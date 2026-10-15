@@ -139,7 +139,7 @@ def compute_router_masks(router,ds,net,site,routing_topk,router_seed):
 
     2026-09-23 (coded ablation/routing comparison, R3 #5-style routing sweep
     against the LDPC-coded headline pipeline, not the old uncoded-digital one
-    routing_eval.py/routing_eval_fixup.py used). Reuses routing_baselines.py's
+    analysis/routing_eval.py/analysis/routing_eval_fixup.py used). Reuses routing_baselines.py's
     existing score functions unmodified -- this function only adds the
     plumbing to get their [N,784] output into model.py's route_override.
     """

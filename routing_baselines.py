@@ -31,7 +31,7 @@ def _ensure_hyp(detector_model):
 # Box / random / uniform / oracle-binary scorers (ROUTING, wave 7)             #
 #                                                                              #
 # NOTE (wave 9a ROUTING-EVAL): these functions were written by the ROUTING      #
-# agent (wave 7) and unit-tested in test_routing_baselines.py, but were         #
+# agent (wave 7) and unit-tested in tests/test_routing_baselines.py, but were         #
 # clobbered when the COMPETITOR agent rewrote routing_baselines.py in place     #
 # with a different scorer. They are reconstructed here verbatim    #
 # from the test file's contract (shape/dtype/range/hand-computed cases).         #

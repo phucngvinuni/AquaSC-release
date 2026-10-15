@@ -7,7 +7,7 @@ role: "RUN-1 flagship (final model, 18/2)"
 notes: >
   RVQFIX stage-1 fix holds at utilization 1.0000 across all 300 epochs.
   mAP@0.5 was NOT tracked during training (--yolo_weights "" to avoid VRAM
-  spikes); post-hoc mAP is the Wave-8 EVAL-FINAL pass (see reproduce_figures.py).
+  spikes); post-hoc mAP is the Wave-8 EVAL-FINAL pass (see plotting/reproduce_figures.py).
 
 seed: 42
 

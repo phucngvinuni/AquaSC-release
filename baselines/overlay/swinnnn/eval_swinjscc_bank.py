@@ -2,7 +2,7 @@
 # checkpoint through the SAME seeded channel bank as AquaSC (Wave 8 STATS),
 # and score PSNR/SSIM (224 grid) + mAP@0.5 (best.pt conf 0.001) + per-image AP.
 #
-# Mirrors stats_eval_jscc.py protocol (batch=1, bank {h,n} replay, torchmetrics
+# Mirrors analysis/stats_eval_jscc.py protocol (batch=1, bank {h,n} replay, torchmetrics
 # MeanAveragePrecision, stats.per_image_ap50).  The bank's block-fading h is the
 # scalar per-image gain; the bank's N(0,1) noise stream supplies the complex
 # noise (first F/2 samples = real part, next F/2 = imag part, scaled by

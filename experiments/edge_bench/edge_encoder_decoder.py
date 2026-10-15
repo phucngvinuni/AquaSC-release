@@ -14,7 +14,7 @@ decode side) -- verified against the real model by extract_edge_weights.py's
 parity check before any checkpoint is shipped to the Pi.
 
 Flagship hyperparameters (architecture is fixed at construction, matching
-eval_flagship_coded_pooled.sh): patch_size=8, encoder_embed_dim=512,
+drivers/eval_flagship_coded_pooled.sh): patch_size=8, encoder_embed_dim=512,
 encoder_depth=8, encoder_num_heads=8, fim_embed_dim=256, fim_depth=2,
 fim_num_heads=4, quantizer_dim=512, rvq_stages=3, rvq_bits_per_stage=6,
 bits_vq_low=2, routing_topk=63, decoder_embed_dim=512, decoder_depth=6,

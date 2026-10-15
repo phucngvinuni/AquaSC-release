@@ -139,7 +139,7 @@ def evaluate_semcom_with_yolo(
         # This was previously args.seed + batch_idx, which is only a per-image-
         # unique seed because run_class_main.py's eval dataloader hardcodes
         # batch_size=1 (run_class_main.py:221) -- correct by coincidence, not by
-        # formula. transfer_eval.py made the identical mistake with its own
+        # formula. analysis/transfer_eval.py made the identical mistake with its own
         # batch_size=8 loader and produced a real, measured defect (RESULTS_OF_RECORD.md
         # §6d-3). Using original_imgs_tensor.shape[0] (the true batch size actually
         # in hand here, not args.batch_size, which the batch_size=1-hardcoded caller

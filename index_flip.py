@@ -3,7 +3,7 @@
 The digital chain's corruption of the index stream is dominated by LDPC block
 erasure (BLER); surviving blocks are bit-exact (per-block CRC-32). The measured
 per-index-bit error rate is therefore approximated by the BLER curve from
-`blers_vs_snr.csv` (the CSV's `ber` column is the residual BER over *surviving*
+`results/eval/blers_vs_snr.csv` (the CSV's `ber` column is the residual BER over *surviving*
 blocks and is ~0, so it is not the right quantity for the flip probability).
 We flip each index bit with probability BLER(snr), linearly interpolated over
 the CSV rows and clamped to the measured SNR range. Documented deviation from
@@ -16,7 +16,7 @@ import os
 
 import numpy as np
 
-_DEFAULT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blers_vs_snr.csv")
+_DEFAULT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results/eval/blers_vs_snr.csv")
 
 
 def load_bler_curve(csv_path=None):
@@ -33,13 +33,13 @@ def load_bler_curve(csv_path=None):
                 snr_f = float(snr)
                 bler_f = float(bler)
             except (TypeError, ValueError):
-                # skip the second header / comment rows in blers_vs_snr.csv
+                # skip the second header / comment rows in results/eval/blers_vs_snr.csv
                 continue
             snrs.append(snr_f)
             blers.append(bler_f)
     snrs = np.asarray(snrs, dtype=np.float64)
     blers = np.asarray(blers, dtype=np.float64)
-    # deduplicate (blers_vs_snr.csv repeats 0/10/20 dB for the pilot sweep);
+    # deduplicate (results/eval/blers_vs_snr.csv repeats 0/10/20 dB for the pilot sweep);
     # keep the first occurrence (the perfect-CSI sweep).
     if snrs.size:
         _, keep = np.unique(snrs, return_index=True)
