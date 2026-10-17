@@ -25,7 +25,9 @@ bash scripts/demo.sh
 Runs the four unit tests (statistics protocol, routing controls, bitstream round trip with header/mask/CRC-32, LDPC/QAM chain), recomputes the paired confidence intervals from the shipped per-image arrays, and regenerates the six current quantitative manuscript figures from frozen aggregate inputs into `figs/`.
 
 ## 3. Data and checkpoints
-* Checkpoints and detector: `docs/CHECKPOINTS.md` (download link, SHA-256 manifest `artifacts/checkpoints_manifest.json`, `bash scripts/attach_checkpoints.sh DOWNLOAD_DIR` verifies every hash).
+* **Dataset archives:** [Zenodo: AquaSC-Dataset](https://doi.org/10.5281/zenodo.23423603) (`Data.zip` for Site A and `DataSiteB.zip` for Site B).
+* **Pretrained checkpoints and detector weights:** [Zenodo: AquaSC-checkpoint](https://doi.org/10.5281/zenodo.23402303).
+* Checkpoint setup and verification: `docs/CHECKPOINTS.md` (SHA-256 manifest `artifacts/checkpoints_manifest.json`, `bash scripts/attach_checkpoints.sh DOWNLOAD_DIR` verifies every hash).
 * Dataset (VinFish Site A, FishDet-NB2 Site B), annotation format, preprocessing and split lists: `docs/DATA.md`. Expected roots: `<DATA_ROOT>/yolo_fish_dataset_root/{train,valid,test}/{images,labels}` and `yolo_fishdet_nb2_vd/...`.
 
 ## 4. Full coded evaluation (one command per rate)
@@ -52,7 +54,7 @@ and evaluation protocol. `--figures main rate` draws a subset; `--list` lists ch
 Numerical evaluation and statistics reruns are separate from plot generation:
 entry points, configurations, saved outputs, and checkpoint hashes are mapped in
 `docs/RESULT_MAP.md`, `configs/README.md`, and `artifacts/checkpoints_manifest.json`.
-External checkpoint/image access is documented in `docs/CHECKPOINTS.md` and `docs/DATA.md`.
+Dataset and checkpoint download links are listed in Section 3 above; setup instructions are documented in `docs/CHECKPOINTS.md` and `docs/DATA.md`.
 
 ## 6. Statistics protocol
 Per-image AP50 is averaged over the 10 channel draws; differences between methods use a **paired bootstrap over the 432 test images** (10,000 resamples, seed 42, percentile 95 % interval, `stats.paired_bootstrap`). Pooled mAP@0.5 is computed per draw over all images and reported as mean +- std over the 10 draws.
